@@ -1,6 +1,7 @@
 # Extensão de navegador com WXT + React
 
-Esse respositorio é um sistema que ajuda a ler e entender o conteúdo do portal da legislação municipal.
+
+Esse respositorio é um sistema que ajuda a ler e entender o conteúdo do portal da legislação municipal
 
 
 ## Lei Fácil 

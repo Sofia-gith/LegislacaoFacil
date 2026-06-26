@@ -78,24 +78,92 @@ O bundle final estará em `.output/chrome-mv3/`.
 
 ## 📁 Estrutura do projeto
 
+# Estrutura de Pastas — Lei Fácil
+
 ```
-lei-facil-extension/
-├── public/
-│   └── glossario.json          # Termos jurídicos e definições
-├── src/
-│   ├── entrypoints/
-│   │   ├── content.ts          # Content script — injeta UI na página
-│   │   └── background.ts       # Service worker — chama a API do Gemini
-│   ├── components/
-│   │   ├── Tooltip.ts          # Tooltip do glossário
-│   │   └── PainelSimplificar.ts
-│   └── utils/
-│       ├── glossario.ts        # Lógica de highlight via TreeWalker
-│       └── gemini.ts           # Helper de prompt
-└── wxt.config.ts
+LeiaFacil/
+│
+├── lei-facil-extension/          # Extensão de navegador (WXT + TypeScript)
+│   │
+│   ├── public/
+│   │   └── glossario.json        # Termos jurídicos e definições (estático)
+│   │
+│   ├── src/
+│   │   ├── entrypoints/
+│   │   │   ├── content.ts        # Injeta UI na página, observa o DOM
+│   │   │   └── background.ts     # Service worker — chama o backend
+│   │   │
+│   │   ├── components/
+│   │   │   ├── Tooltip.ts        # Tooltip do glossário (Shadow DOM)
+│   │   │   └── PainelSimplificar.ts  # Painel flutuante de simplificação
+│   │   │
+│   │   └── utils/
+│   │       ├── glossario.ts      # Highlight de termos via TreeWalker
+│   │       └── api.ts            # Chamadas ao backend Go
+│   │
+│   ├── wxt.config.ts             # Configuração do WXT (permissões, hosts)
+│   ├── tsconfig.json
+│   └── package.json
+│
+├── lei-facil-backend/            # Backend (Go)
+│   │
+│   ├── cmd/
+│   │   └── main.go               # Entrypoint do servidor
+│   │
+│   ├── internal/
+│   │   ├── handler/
+│   │   │   └── simplificar.go    # Handler do endpoint POST /simplificar
+│   │   │
+│   │   └── gemini/
+│   │       └── client.go         # Cliente para a API do Gemini
+│   │
+│   ├── Dockerfile                # Multi-stage build para deploy
+│   ├── .env.example              # Exemplo de variáveis de ambiente
+│   ├── .env                      # Chave de API real (nunca sobe pro git)
+│   └── go.mod
+│
+├── .gitignore
+└── README.md
 ```
 
 ---
+
+## Responsabilidade de cada arquivo
+
+### Extensão
+
+| Arquivo | O que faz |
+|---|---|
+| `content.ts` | Roda na página, usa MutationObserver para detectar o texto da lei, injeta a UI |
+| `background.ts` | Service worker — único ponto que se comunica com o backend |
+| `Tooltip.ts` | Componente de tooltip isolado em Shadow DOM |
+| `PainelSimplificar.ts` | Painel que exibe o texto simplificado retornado pela IA |
+| `glossario.ts` | Percorre o DOM com TreeWalker e envolve termos jurídicos em elementos clicáveis |
+| `api.ts` | Funções para chamar o backend (fetch para POST /simplificar) |
+| `glossario.json` | JSON estático com os termos e definições — não precisa de IA |
+
+### Backend
+
+| Arquivo | O que faz |
+|---|---|
+| `main.go` | Inicia o servidor HTTP, registra as rotas |
+| `simplificar.go` | Recebe o texto, valida, chama o cliente Gemini, retorna a resposta |
+| `client.go` | Encapsula a chamada à API do Gemini com a chave protegida |
+| `.env` | `GEMINI_API_KEY=...` — nunca exposta ao usuário |
+| `Dockerfile` | Build de produção — imagem Alpine pequena (~10MB) |
+
+---
+
+## Variáveis de ambiente do backend
+
+```env
+# .env.example
+GEMINI_API_KEY=sua_chave_aqui
+PORT=8080
+ALLOWED_ORIGIN=chrome-extension://ID_DA_SUA_EXTENSAO
+```
+
+> `ALLOWED_ORIGIN` é importante para que o backend só aceite requisições da sua extensão (CORS).
 
 ##  Configuração da API
 

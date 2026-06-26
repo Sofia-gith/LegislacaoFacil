@@ -1,26 +1,28 @@
 export default defineBackground(() => {
-  console.log('LeiaFacil Background', { id: browser.runtime.id });
+  console.log('[Background] Script iniciado');
 
-  // Armazenar conteúdo temporariamente
   let conteudoArmazenado: string = '';
 
-  // Listener para mensagens do content script
   browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log('[Background] Mensagem recebida:', request.action);
+    
     if (request.action === 'abrirPopup') {
-      console.log('LeiaFacil: Solicitação para abrir popup');
+      console.log('[Background] Ação: abrirPopup');
       
-      // Armazenar conteúdo
       if (request.conteudo) {
         conteudoArmazenado = request.conteudo;
-        console.log('LeiaFacil: Conteúdo armazenado');
+        console.log('[Background] ✓ Conteúdo armazenado:', conteudoArmazenado.length, 'caracteres');
       }
       
       sendResponse({ status: 'popup_pronto', tamanho: request.conteudo?.length || 0 });
     }
     
-    // Endpoint para o popup acessar o conteúdo
     if (request.action === 'obterConteudo') {
+      console.log('[Background] Ação: obterConteudo');
+      console.log('[Background] ✓ Enviando conteúdo:', conteudoArmazenado.length, 'caracteres');
       sendResponse({ conteudo: conteudoArmazenado });
     }
   });
+  
+  console.log('[Background] Listeners registrados');
 });

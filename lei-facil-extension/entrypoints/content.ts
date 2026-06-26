@@ -1,42 +1,49 @@
 export default defineContentScript({
   matches: ['*://legislacao.prefeitura.sp.gov.br/*'],
   main() {
+    console.log('[Content] Script injetado na página');
     injetarBotaoSimplificar();
   },
 });
 
 function injetarBotaoSimplificar() {
-  // Aguardar DOM carregar
+  console.log('[Content] Iniciando injeção do botão');
+  
   if (document.readyState === 'loading') {
+    console.log('[Content] Aguardando DOM carregar...');
     document.addEventListener('DOMContentLoaded', criarBotao);
   } else {
+    console.log('[Content] DOM já carregado');
     criarBotao();
   }
 }
 
 function criarBotao() {
-  // Encontrar container: div com class "col s12 bx-content-links"
+  console.log('[Content] Procurando container da página...');
+  
   const containerDiv = document.querySelector('.col.s12.bx-content-links');
   
   if (!containerDiv) {
-    console.log('LeiaFacil: Container não encontrado');
+    console.error('[Content] ❌ Container não encontrado');
     return;
   }
+  
+  console.log('[Content] ✓ Container encontrado');
 
-  // Encontrar a ul dentro com class "bx-btn"
   const ulBxBtn = containerDiv.querySelector('ul.bx-btn');
   
   if (!ulBxBtn) {
-    console.log('LeiaFacil: UL não encontrado');
+    console.error('[Content] ❌ UL não encontrado');
     return;
   }
+  
+  console.log('[Content] ✓ UL encontrado');
 
-  // Verificar se já foi injetado
   if (document.querySelector('#leiaFacil-botao-container')) {
+    console.log('[Content] Botão já foi injetado');
     return;
   }
 
-  // Criar novo <li> com botão
   const novoLi = document.createElement('li');
   novoLi.id = 'leiaFacil-botao-container';
   
@@ -47,29 +54,31 @@ function criarBotao() {
   link.style.cursor = 'pointer';
   link.style.color = '#0056b3';
   
-  // Evento: extrair conteúdo e abrir popup ao clicar
   link.addEventListener('click', (e) => {
     e.preventDefault();
+    console.log('[Content] Botão clicado!');
     
-    // Extrair conteúdo do div com class "col s12 customStyle"
     const conteudoDiv = document.querySelector('.col.s12.customStyle');
     
     if (!conteudoDiv) {
-      console.log('LeiaFacil: Div de conteúdo não encontrado');
+      console.error('[Content] ❌ Div de conteúdo não encontrado');
       alert('Conteúdo não encontrado na página');
       return;
     }
     
-    // Obter o texto do elemento
     const conteudo = conteudoDiv.innerText || conteudoDiv.textContent;
     
-    console.log('LeiaFacil: Conteúdo extraído, tamanho:', conteudo.length, 'caracteres');
+    console.log('[Content] ✓ Conteúdo extraído:', conteudo.length, 'caracteres');
+    console.log('[Content] Enviando mensagem para background...');
     
-    // Enviar conteúdo para o background/popup
     chrome.runtime.sendMessage(
       { action: 'abrirPopup', conteudo: conteudo },
       (response) => {
-        console.log('LeiaFacil: Popup aberto com conteúdo');
+        if (chrome.runtime.lastError) {
+          console.error('[Content] ❌ Erro ao enviar mensagem:', chrome.runtime.lastError.message);
+        } else {
+          console.log('[Content] ✓ Mensagem enviada com sucesso');
+        }
       }
     );
   });
@@ -77,5 +86,5 @@ function criarBotao() {
   novoLi.appendChild(link);
   ulBxBtn.appendChild(novoLi);
   
-  console.log('LeiaFacil: Botão injetado com sucesso');
+  console.log('[Content] ✅ Botão injetado com sucesso');
 }

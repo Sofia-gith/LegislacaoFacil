@@ -7,7 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
+	"time"
 )
 
 const (
@@ -34,8 +36,10 @@ func NewClient(apiKey string) (*Client, error) {
 		return nil, errors.New("gemini: api key is required")
 	}
 	return &Client{
-		apiKey:     apiKey,
-		httpClient: &http.Client{},
+		apiKey: apiKey,
+		httpClient: &http.Client{
+			Timeout: 30 * time.Second,
+		},
 	}, nil
 }
 
@@ -85,6 +89,9 @@ func (c *Client) Simplify(ctx context.Context, text string) (string, error) {
 		return "", errors.New("gemini: text cannot be empty")
 	}
 
+	log.Printf("[Gemini] Iniciando simplificação - Tamanho do texto: %d caracteres", len(text))
+	log.Printf("[Gemini] Texto enviado: %s...", truncateLog(text, 150))
+
 	payload := geminiRequest{
 		SystemInstruction: systemInstruction{
 			Parts: []part{{Text: systemPrompt}},
@@ -96,40 +103,66 @@ func (c *Client) Simplify(ctx context.Context, text string) (string, error) {
 
 	body, err := json.Marshal(payload)
 	if err != nil {
+		log.Printf("[Gemini] Erro ao encodar payload: %v", err)
 		return "", fmt.Errorf("gemini: failed to encode request: %w", err)
 	}
+
+	log.Printf("[Gemini] Payload criado - Tamanho: %d bytes", len(body))
 
 	url := apiURL
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
+		log.Printf("[Gemini] Erro ao criar requisição HTTP: %v", err)
 		return "", fmt.Errorf("gemini: failed to create request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("x-goog-api-key", c.apiKey)
+	req.Header.Set("x-goog-api-key", "***REDACTED***")
 
+	log.Printf("[Gemini] Enviando requisição para API Gemini...")
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
+		log.Printf("[Gemini] Erro na requisição HTTP: %v", err)
 		return "", fmt.Errorf("gemini: http request failed: %w", err)
 	}
 	defer resp.Body.Close()
 
+	log.Printf("[Gemini] Resposta recebida - Status Code: %d", resp.StatusCode)
+
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
+		log.Printf("[Gemini] Erro ao ler resposta: %v", err)
 		return "", fmt.Errorf("gemini: failed to read response: %w", err)
 	}
 
+	log.Printf("[Gemini] Corpo da resposta - Tamanho: %d bytes", len(respBody))
+
 	var gemResp geminiResponse
 	if err := json.Unmarshal(respBody, &gemResp); err != nil {
+		log.Printf("[Gemini] Erro ao decodificar resposta JSON: %v", err)
+		log.Printf("[Gemini] Resposta bruta: %s", string(respBody))
 		return "", fmt.Errorf("gemini: failed to decode response: %w", err)
 	}
 
 	if gemResp.Error != nil {
+		log.Printf("[Gemini] Erro na API Gemini - Código: %d, Mensagem: %s", gemResp.Error.Code, gemResp.Error.Message)
 		return "", fmt.Errorf("gemini: api error %d: %s", gemResp.Error.Code, gemResp.Error.Message)
 	}
 
 	if len(gemResp.Candidates) == 0 || len(gemResp.Candidates[0].Content.Parts) == 0 {
+		log.Printf("[Gemini] Erro: Resposta vazia da API")
 		return "", errors.New("gemini: empty response from api")
 	}
 
-	return gemResp.Candidates[0].Content.Parts[0].Text, nil
+	result := gemResp.Candidates[0].Content.Parts[0].Text
+	log.Printf("[Gemini] Simplificação bem-sucedida - Tamanho do resultado: %d caracteres", len(result))
+	log.Printf("[Gemini] Resultado: %s...", truncateLog(result, 150))
+
+	return result, nil
+}
+
+func truncateLog(s string, maxLen int) string {
+	if len(s) > maxLen {
+		return s[:maxLen] + "..."
+	}
+	return s
 }

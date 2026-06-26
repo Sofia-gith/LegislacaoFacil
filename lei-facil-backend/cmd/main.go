@@ -12,37 +12,62 @@ import (
 )
 
 func main() {
+	log.Println("[Main] Iniciando servidor LeiaFácil...")
+
 	if err := godotenv.Load(); err != nil {
-		log.Println("no .env file found, using system environment variables")
+		log.Println("[Main] Aviso: arquivo .env não encontrado, usando variáveis de ambiente do sistema")
 	}
 
 	apiKey := os.Getenv("GEMINI_API_KEY")
 	port := os.Getenv("PORT")
 	allowedOrigin := os.Getenv("ALLOWED_ORIGIN")
 
+	if apiKey == "" {
+		log.Println("[Main] Aviso: GEMINI_API_KEY não configurada")
+	} else {
+		log.Println("[Main] GEMINI_API_KEY configurada")
+	}
+
 	if port == "" {
-		port = "8080"
+		port = "8000"
+		log.Println("[Main] PORT não configurada, usando default: 8000")
+	} else {
+		log.Printf("[Main] PORT configurada: %s\n", port)
+	}
+
+	if allowedOrigin != "" {
+		log.Printf("[Main] ALLOWED_ORIGIN: %s\n", allowedOrigin)
+	} else {
+		log.Println("[Main] ALLOWED_ORIGIN vazia, permitindo requisições de qualquer origem")
 	}
 
 	geminiClient, err := gemini.NewClient(apiKey)
 	if err != nil {
-		log.Fatalf("failed to create gemini client: %v", err)
+		log.Fatalf("[Main] Erro ao criar cliente Gemini: %v", err)
 	}
+
+	log.Println("[Main] Cliente Gemini criado com sucesso")
 
 	mux := http.NewServeMux()
 
 	simplificarHandler := handler.NewSimplificarHandler(geminiClient)
 	mux.Handle("/simplificar", corsMiddleware(allowedOrigin, simplificarHandler))
 
+	log.Println("[Main] Rotas configuradas")
+
 	addr := fmt.Sprintf(":%s", port)
-	log.Printf("server listening on %s", addr)
+	log.Printf("[Main] Servidor iniciado em http://localhost:%s", port)
 	log.Fatal(http.ListenAndServe(addr, mux))
 }
 
 func corsMiddleware(allowedOrigin string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Se ALLOWED_ORIGIN está vazio, permite todas (desenvolvimento)
+		// Se tiver valor, usa esse valor específico
 		if allowedOrigin != "" {
 			w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
+		} else {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
 		}
 		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")

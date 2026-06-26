@@ -2,7 +2,19 @@
   "permissions": {
     "allow": [
       "Bash(go test ./... *)",
-      "Bash(go build ./... *)"
+      "Bash(go build ./... *)",
+      "Bash(go get github.com/joho/godotenv *)",
+      "Bash(curl *)",
+      "KillShell",
+      "Bash(go run ./cmd/main.go *)",
+      "Bash(for *)",
+      "Bash(go mod tidy *)",
+      "Bash(go get github.com/google/generative-ai-go/genai *)",
+      "Bash(go get google.golang.org/api/option *)",
+      "Bash(go test ./internal/handler *)",
+      "Bash(go build ./internal/gemini *)",
+      "Bash(go *)",
+      "Bash(/wait *)"
     ]
   }
 }

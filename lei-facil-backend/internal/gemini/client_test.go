@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strings"
 	"testing"
-
 	"github.com/Sofia-gith/LegislacaoFacil/lei-facil-backend/internal/gemini"
 )
 

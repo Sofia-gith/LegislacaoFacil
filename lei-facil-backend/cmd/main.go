@@ -6,11 +6,16 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/Sofia-gith/LegislacaoFacil/lei-facil-backend/internal/gemini"
 	"github.com/Sofia-gith/LegislacaoFacil/lei-facil-backend/internal/handler"
 )
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		log.Println("no .env file found, using system environment variables")
+	}
+
 	apiKey := os.Getenv("GEMINI_API_KEY")
 	port := os.Getenv("PORT")
 	allowedOrigin := os.Getenv("ALLOWED_ORIGIN")

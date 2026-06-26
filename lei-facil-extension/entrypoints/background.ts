@@ -14,6 +14,13 @@ export default defineBackground(() => {
         console.log('[Background] ✓ Conteúdo armazenado:', conteudoArmazenado.length, 'caracteres');
       }
       
+      console.log('[Background] Abrindo popup...');
+      browser.action.openPopup().then(() => {
+        console.log('[Background] ✓ Popup aberto com sucesso');
+      }).catch(err => {
+        console.error('[Background] ❌ Erro ao abrir popup:', err);
+      });
+      
       sendResponse({ status: 'popup_pronto', tamanho: request.conteudo?.length || 0 });
     }
     

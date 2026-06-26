@@ -71,16 +71,20 @@ function criarBotao() {
     console.log('[Content] ✓ Conteúdo extraído:', conteudo.length, 'caracteres');
     console.log('[Content] Enviando mensagem para background...');
     
-    chrome.runtime.sendMessage(
-      { action: 'abrirPopup', conteudo: conteudo },
-      (response) => {
-        if (chrome.runtime.lastError) {
-          console.error('[Content] ❌ Erro ao enviar mensagem:', chrome.runtime.lastError.message);
-        } else {
-          console.log('[Content] ✓ Mensagem enviada com sucesso');
+    try {
+      chrome.runtime.sendMessage(
+        { action: 'abrirPopup', conteudo: conteudo },
+        (response) => {
+          if (chrome.runtime.lastError) {
+            console.error('[Content] ❌ Erro ao enviar mensagem:', chrome.runtime.lastError.message);
+          } else {
+            console.log('[Content] ✓ Mensagem enviada com sucesso');
+          }
         }
-      }
-    );
+      );
+    } catch (err) {
+      console.error('[Content] ❌ Erro ao enviar mensagem:', err);
+    }
   });
   
   novoLi.appendChild(link);

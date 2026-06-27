@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/Sofia-gith/LegislacaoFacil/lei-facil-backend/internal/gemini"
+	"github.com/Sofia-gith/LegislacaoFacil/lei-facil-backend/internal/deepseek"
 	"github.com/Sofia-gith/LegislacaoFacil/lei-facil-backend/internal/handler"
 )
 
@@ -18,14 +18,14 @@ func main() {
 		log.Println("[Main] Aviso: arquivo .env não encontrado, usando variáveis de ambiente do sistema")
 	}
 
-	apiKey := os.Getenv("GEMINI_API_KEY")
+	apiKey := os.Getenv("DEEPSEEK_API_KEY")
 	port := os.Getenv("PORT")
 	allowedOrigin := os.Getenv("ALLOWED_ORIGIN")
 
 	if apiKey == "" {
-		log.Println("[Main] Aviso: GEMINI_API_KEY não configurada")
+		log.Println("[Main] Aviso: DEEPSEEK_API_KEY não configurada")
 	} else {
-		log.Println("[Main] GEMINI_API_KEY configurada")
+		log.Println("[Main] DEEPSEEK_API_KEY configurada")
 	}
 
 	if port == "" {
@@ -41,16 +41,16 @@ func main() {
 		log.Println("[Main] ALLOWED_ORIGIN vazia, permitindo requisições de qualquer origem")
 	}
 
-	geminiClient, err := gemini.NewClient(apiKey)
+	deepseekClient, err := deepseek.NewClient(apiKey)
 	if err != nil {
-		log.Fatalf("[Main] Erro ao criar cliente Gemini: %v", err)
+		log.Fatalf("[Main] Erro ao criar cliente DeepSeek: %v", err)
 	}
 
-	log.Println("[Main] Cliente Gemini criado com sucesso")
+	log.Println("[Main] Cliente DeepSeek criado com sucesso")
 
 	mux := http.NewServeMux()
 
-	simplificarHandler := handler.NewSimplificarHandler(geminiClient)
+	simplificarHandler := handler.NewSimplificarHandler(deepseekClient)
 	mux.Handle("/simplificar", corsMiddleware(allowedOrigin, simplificarHandler))
 
 	log.Println("[Main] Rotas configuradas")

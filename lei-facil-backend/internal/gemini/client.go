@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	apiURL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+	apiURL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent"
 
 	systemPrompt = `Você é um assistente de acessibilidade jurídica. 
 Explique o trecho de lei abaixo em linguagem simples, clara e direta, 
@@ -116,7 +116,7 @@ func (c *Client) Simplify(ctx context.Context, text string) (string, error) {
 		return "", fmt.Errorf("gemini: failed to create request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("x-goog-api-key", "***REDACTED***")
+	req.Header.Set("x-goog-api-key", c.apiKey)
 
 	log.Printf("[Gemini] Enviando requisição para API Gemini...")
 	resp, err := c.httpClient.Do(req)

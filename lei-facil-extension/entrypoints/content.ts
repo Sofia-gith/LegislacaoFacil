@@ -1,3 +1,5 @@
+declare const chrome: any;
+
 export default defineContentScript({
   matches: ['*://legislacao.prefeitura.sp.gov.br/*'],
   main() {
@@ -66,7 +68,7 @@ function criarBotao() {
       return;
     }
     
-    const conteudo = conteudoDiv.innerText || conteudoDiv.textContent;
+    const conteudo = (conteudoDiv as HTMLElement).innerText || conteudoDiv.textContent || '';
     
     console.log('[Content] ✓ Conteúdo extraído:', conteudo.length, 'caracteres');
     console.log('[Content] Enviando mensagem para background...');
@@ -74,7 +76,7 @@ function criarBotao() {
     try {
       chrome.runtime.sendMessage(
         { action: 'abrirPopup', conteudo: conteudo },
-        (response) => {
+        (response: any) => {
           if (chrome.runtime.lastError) {
             console.error('[Content] ❌ Erro ao enviar mensagem:', chrome.runtime.lastError.message);
           } else {

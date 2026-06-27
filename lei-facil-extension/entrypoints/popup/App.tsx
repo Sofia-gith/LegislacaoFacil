@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 
+declare const chrome: any;
+
 function App() {
   const [conteudo, setConteudo] = useState('');
   const [carregando, setCarregando] = useState(false);
@@ -10,7 +12,7 @@ function App() {
   useEffect(() => {
     console.log('[Popup] Componente montado');
     
-    chrome.runtime.sendMessage({ action: 'obterConteudo' }, (response) => {
+    chrome.runtime.sendMessage({ action: 'obterConteudo' }, (response: any) => {
       if (chrome.runtime.lastError) {
         console.error('[Popup] ❌ Erro ao obter conteúdo:', chrome.runtime.lastError.message);
         setErro('Erro ao comunicar com extensão');
@@ -48,7 +50,7 @@ function App() {
       const resposta_api = await fetch('http://localhost:8000/simplificar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ texto: conteudo })
+        body: JSON.stringify({ text: conteudo })
       });
 
       console.log('[Popup] Resposta recebida - Status:', resposta_api.status);

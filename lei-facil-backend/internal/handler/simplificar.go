@@ -52,6 +52,7 @@ func (h *SimplificarHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("[Handler] Texto recebido - Tamanho: %d caracteres", len(req.Text))
+	log.Printf("[Handler] Texto completo:\n%s", req.Text)
 
 	if req.Text == "" {
 		log.Printf("[Handler] Erro: Texto vazio")

@@ -42,6 +42,11 @@ function App() {
     setErro('');
     setResposta('');
 
+    console.log('[Popup] ========== CONTEÚDO COMPLETO A ENVIAR PARA BACKEND ==========');
+    console.log('[Popup] Tamanho total: ' + conteudo.length + ' caracteres');
+    console.log(conteudo);
+    console.log('[Popup] ========== FIM DO CONTEÚDO ==========');
+
     try {
       console.log('[Popup] Enviando requisição para backend...');
       console.log('[Popup] URL: http://localhost:8000/simplificar');
@@ -81,24 +86,26 @@ function App() {
   };
 
   return (
-    <div style={{ width: '500px', padding: '15px', fontFamily: 'Arial, sans-serif' }}>
+    <div style={{ width: '600px', maxHeight: '700px', padding: '15px', fontFamily: 'Arial, sans-serif', overflowY: 'auto' }}>
       <h2>LeiaFácil</h2>
 
       {conteudo ? (
         <>
-          <div style={{
-            border: '1px solid #ccc',
-            padding: '10px',
-            marginBottom: '10px',
-            maxHeight: '150px',
-            overflowY: 'auto',
-            backgroundColor: '#f9f9f9'
-          }}>
-            <p><strong>Conteúdo detectado ({conteudo.length} caracteres):</strong></p>
-            <p style={{ fontSize: '12px', color: '#666' }}>
-              {conteudo.substring(0, 200)}...
-            </p>
-          </div>
+           <div style={{
+             border: '1px solid #0056b3',
+             padding: '10px',
+             marginBottom: '10px',
+             maxHeight: '150px',
+             overflowY: 'auto',
+             backgroundColor: '#e7f3ff',
+             borderRadius: '4px'
+           }}>
+             <p><strong>📄 Conteúdo detectado ({conteudo.length} caracteres):</strong></p>
+             <p style={{ fontSize: '12px', color: '#333', whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
+               {conteudo.substring(0, 300)}
+               {conteudo.length > 300 ? '...' : ''}
+             </p>
+           </div>
 
           <button
             onClick={simplificar}
@@ -130,20 +137,25 @@ function App() {
             </div>
           )}
 
-          {resposta && (
-            <div style={{
-              marginTop: '10px',
-              padding: '10px',
-              backgroundColor: '#d4edda',
-              color: '#155724',
-              borderRadius: '4px',
-              maxHeight: '200px',
-              overflowY: 'auto'
-            }}>
-              <p><strong>✓ Resultado Simplificado:</strong></p>
-              <p style={{ fontSize: '13px', lineHeight: '1.5' }}>{resposta}</p>
-            </div>
-          )}
+           {resposta && (
+             <div style={{
+               marginTop: '10px',
+               padding: '10px',
+               backgroundColor: '#d4edda',
+               color: '#155724',
+               borderRadius: '4px',
+               maxHeight: '400px',
+               overflowY: 'auto'
+             }}>
+               <p><strong>✓ Resultado Simplificado:</strong></p>
+               <p style={{ fontSize: '11px', color: '#0056b3', marginBottom: '10px' }}>
+                 📊 Caracteres capturados: <strong>{resposta.length}</strong>
+               </p>
+               <p style={{ fontSize: '13px', lineHeight: '1.6', whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
+                 {resposta}
+               </p>
+             </div>
+           )}
         </>
       ) : (
         <div style={{ color: '#666', padding: '20px', textAlign: 'center' }}>

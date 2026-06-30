@@ -96,7 +96,7 @@ func TestSimplificarHandler_Success(t *testing.T) {
 	if err := json.NewDecoder(rec.Body).Decode(&resp); err != nil {
 		t.Fatalf("failed to decode response: %v", err)
 	}
-	if resp["result"] != expected {
-		t.Errorf("expected result %q, got %q", expected, resp["result"])
+	if resp["texto_simplificado"] != expected {
+		t.Errorf("expected result %q, got %q", expected, resp["texto_simplificado"])
 	}
 }

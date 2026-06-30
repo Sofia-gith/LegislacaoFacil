@@ -7,26 +7,36 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/Sofia-gith/LegislacaoFacil/lei-facil-backend/internal/deepseek"
+	"github.com/Sofia-gith/LegislacaoFacil/lei-facil-backend/internal/gemini"
 	"github.com/Sofia-gith/LegislacaoFacil/lei-facil-backend/internal/handler"
 )
 
 func main() {
+
 	log.Println("[Main] Iniciando servidor LeiaFácil...")
+
+	log.Printf("ANTES: %s", os.Getenv("GEMINI_API_KEY"))
 
 	if err := godotenv.Load(); err != nil {
 		log.Println("[Main] Aviso: arquivo .env não encontrado, usando variáveis de ambiente do sistema")
 	}
-
-	apiKey := os.Getenv("DEEPSEEK_API_KEY")
+	log.Printf("DEPOIS: %s", os.Getenv("GEMINI_API_KEY"))
+	apiKey := os.Getenv("GEMINI_API_KEY")
 	port := os.Getenv("PORT")
 	allowedOrigin := os.Getenv("ALLOWED_ORIGIN")
 
 	if apiKey == "" {
-		log.Println("[Main] Aviso: DEEPSEEK_API_KEY não configurada")
+		log.Println("[Main] Aviso: GEMINI_API_KEY não configurada")
 	} else {
-		log.Println("[Main] DEEPSEEK_API_KEY configurada")
+		log.Println("[Main] GEMINI_API_KEY configurada")
 	}
+	wd, _ := os.Getwd()
+	log.Printf("Diretório atual: %s", wd)
+
+	err := godotenv.Load()
+	log.Printf("godotenv.Load() = %v", err)
+
+	log.Printf("ENV GEMINI_API_KEY: %.12s...", os.Getenv("GEMINI_API_KEY"))
 
 	if port == "" {
 		port = "8000"
@@ -41,16 +51,16 @@ func main() {
 		log.Println("[Main] ALLOWED_ORIGIN vazia, permitindo requisições de qualquer origem")
 	}
 
-	deepseekClient, err := deepseek.NewClient(apiKey)
+	geminiClient, err := gemini.NewClient(apiKey)
 	if err != nil {
-		log.Fatalf("[Main] Erro ao criar cliente DeepSeek: %v", err)
+		log.Fatalf("[Main] Erro ao criar cliente Gemini: %v", err)
 	}
 
-	log.Println("[Main] Cliente DeepSeek criado com sucesso")
+	log.Println("[Main] Cliente Gemini criado com sucesso")
 
 	mux := http.NewServeMux()
 
-	simplificarHandler := handler.NewSimplificarHandler(deepseekClient)
+	simplificarHandler := handler.NewSimplificarHandler(geminiClient)
 	mux.Handle("/simplificar", corsMiddleware(allowedOrigin, simplificarHandler))
 
 	log.Println("[Main] Rotas configuradas")

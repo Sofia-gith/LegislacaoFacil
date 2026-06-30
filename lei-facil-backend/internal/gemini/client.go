@@ -13,12 +13,13 @@ import (
 )
 
 const (
-	apiURL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent"
+	apiURL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
 
 	systemPrompt = `Você é um assistente de acessibilidade jurídica. 
 Explique o trecho de lei abaixo em linguagem simples, clara e direta, 
 como se estivesse explicando para alguém sem formação jurídica. 
 Use frases curtas. Não invente informações além do que está escrito. 
+Ao mesmo tempo, diga todas as informações, sem omitir nada.
 Responda apenas com a explicação, sem introduções ou saudações.`
 )
 
@@ -126,6 +127,7 @@ func (c *Client) Simplify(ctx context.Context, text string) (string, error) {
 	}
 	defer resp.Body.Close()
 
+	log.Printf("API Key: %.12s...", c.apiKey)
 	log.Printf("[Gemini] Resposta recebida - Status Code: %d", resp.StatusCode)
 
 	respBody, err := io.ReadAll(resp.Body)
@@ -137,6 +139,7 @@ func (c *Client) Simplify(ctx context.Context, text string) (string, error) {
 	log.Printf("[Gemini] Corpo da resposta - Tamanho: %d bytes", len(respBody))
 
 	var gemResp geminiResponse
+
 	if err := json.Unmarshal(respBody, &gemResp); err != nil {
 		log.Printf("[Gemini] Erro ao decodificar resposta JSON: %v", err)
 		log.Printf("[Gemini] Resposta bruta: %s", string(respBody))

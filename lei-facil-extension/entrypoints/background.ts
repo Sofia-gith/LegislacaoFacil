@@ -4,14 +4,21 @@ export default defineBackground(() => {
   let conteudoArmazenado: string = '';
 
   browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log('[Background] Mensagem recebida:', request.action);
+    console.log('[Background] 📨 Mensagem recebida:', {
+      action: request.action,
+      sender: sender.url,
+      timestamp: new Date().toISOString()
+    });
     
     if (request.action === 'abrirPopup') {
       console.log('[Background] Ação: abrirPopup');
       
       if (request.conteudo) {
         conteudoArmazenado = request.conteudo;
-        console.log('[Background] ✓ Conteúdo armazenado:', conteudoArmazenado.length, 'caracteres');
+        console.log('[Background] ✓ Conteúdo armazenado:', {
+          tamanho: conteudoArmazenado.length,
+          primeiros100: conteudoArmazenado.substring(0, 100)
+        });
       }
       
       console.log('[Background] Abrindo popup...');
@@ -25,9 +32,14 @@ export default defineBackground(() => {
     }
     
     if (request.action === 'obterConteudo') {
-      console.log('[Background] Ação: obterConteudo');
-      console.log('[Background] ✓ Enviando conteúdo:', conteudoArmazenado.length, 'caracteres');
+      console.log('[Background] 📦 Ação: obterConteudo');
+      console.log('[Background] Conteúdo armazenado:', {
+        tamanho: conteudoArmazenado.length,
+        vazio: !conteudoArmazenado.trim()
+      });
+      console.log('[Background] Enviando resposta...');
       sendResponse({ conteudo: conteudoArmazenado });
+      console.log('[Background] ✅ Resposta enviada');
     }
   });
   

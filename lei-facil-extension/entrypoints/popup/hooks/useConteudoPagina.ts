@@ -11,17 +11,30 @@ export function useConteudoPagina() {
   const [erro, setErro] = useState('');
 
   useEffect(() => {
+    console.log('[useConteudoPagina] 📡 Solicitando conteúdo do background...');
+    
     chrome.runtime.sendMessage({ action: 'obterConteudo' }, (response: any) => {
+      console.log('[useConteudoPagina] Resposta do background recebida:', response);
+      
       if (chrome.runtime.lastError) {
-        console.error('[Popup] Erro ao obter conteúdo:', chrome.runtime.lastError.message);
-        setErro('Erro ao comunicar com extensão');
+        const errorMsg = `Erro ao obter conteúdo: ${chrome.runtime.lastError.message}`;
+        console.error('[useConteudoPagina] ❌', errorMsg);
+        setErro(errorMsg);
         return;
       }
 
       if (response?.conteudo) {
-        setConteudo(response.conteudo);
+        const conteudoRecebido = response.conteudo;
+        console.log('[useConteudoPagina] ✅ Conteúdo recebido do background:', {
+          tamanho: conteudoRecebido.length,
+          vazio: !conteudoRecebido.trim(),
+          primeiros100: conteudoRecebido.substring(0, 100)
+        });
+        setConteudo(conteudoRecebido);
       } else {
-        setErro('Nenhum conteúdo extraído');
+        const errorMsg = response?.error || 'Nenhum conteúdo extraído';
+        console.error('[useConteudoPagina] ❌ Erro:', errorMsg, 'Response:', response);
+        setErro(errorMsg);
       }
     });
   }, []);

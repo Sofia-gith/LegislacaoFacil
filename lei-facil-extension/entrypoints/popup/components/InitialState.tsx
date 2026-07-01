@@ -1,5 +1,6 @@
 import { Zap, Clipboard, HelpCircle } from 'lucide-react';
 import { ErrorMessage } from './ErrorMessage';
+import { useEffect } from 'react';
 
 interface InitialStateProps {
   conteudo: string;
@@ -9,6 +10,18 @@ interface InitialStateProps {
 }
 
 export function InitialState({ conteudo, erro, carregando, onSimplificar }: InitialStateProps) {
+  useEffect(() => {
+    console.log('[InitialState] 🎨 Renderizado com conteúdo:', {
+      tamanho: conteudo.length,
+      vazio: !conteudo.trim(),
+      preview: conteudo.substring(0, 50)
+    });
+  }, [conteudo]);
+
+  const handleClick = () => {
+    console.log('[InitialState.handleClick] 🖱️ Botão clicado!');
+    onSimplificar();
+  };
   return (
     <div className="lf-body">
       <div className="lf-detected-box">
@@ -41,7 +54,7 @@ export function InitialState({ conteudo, erro, carregando, onSimplificar }: Init
 
       <button
         className={`lf-btn-primary ${carregando ? 'lf-btn-primary--disabled' : ''}`}
-        onClick={onSimplificar}
+        onClick={handleClick}
         disabled={carregando}
       >
         <Zap size={16} className="lf-icon-inline" />

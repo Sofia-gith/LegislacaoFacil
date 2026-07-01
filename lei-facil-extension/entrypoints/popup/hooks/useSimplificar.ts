@@ -5,6 +5,22 @@ import { useCache } from './useCache';
 const API_URL = 'http://localhost:8000/simplificar';
 const API_URL_O_QUE_MUDA = 'http://localhost:8000/o-que-muda';
 
+function criarCacheId(conteudo: string): string {
+  try {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(conteudo);
+    let hash = 0;
+    for (let i = 0; i < data.length; i++) {
+      hash = ((hash << 5) - hash) + data[i];
+      hash = hash & hash;
+    }
+    return Math.abs(hash).toString(36).substring(0, 16);
+  } catch (err) {
+    console.error('[useSimplificar] Erro ao gerar cacheId:', err);
+    return 'default-' + Date.now().toString(36);
+  }
+}
+
 export function useSimplificar(conteudoId?: string) {
   const [carregando, setCarregando] = useState(false);
   const [resposta, setResposta] = useState<RespostaStructurada | null>(null);
@@ -13,12 +29,19 @@ export function useSimplificar(conteudoId?: string) {
 
   const simplificar = useCallback(
     async (conteudo: string, id?: string) => {
-      if (!conteudo.trim()) {
+      const conteudoTrimmed = conteudo.trim();
+      
+      if (!conteudoTrimmed) {
+        console.error('[useSimplificar] Conteúdo vazio ou inválido:', {
+          tamanhoOriginal: conteudo.length,
+          tamanhoAposTrim: conteudoTrimmed.length,
+          conteudo: conteudo.substring(0, 100)
+        });
         setErro('Nenhum conteúdo para simplificar');
         return;
       }
 
-      const cacheId = id || conteudoId || btoa(conteudo).slice(0, 16);
+      const cacheId = id || conteudoId || criarCacheId(conteudoTrimmed);
 
       const doCache = obterDoCache(cacheId);
       if (doCache) {
@@ -34,13 +57,22 @@ export function useSimplificar(conteudoId?: string) {
 
       try {
         console.log('[useSimplificar] Enviando requisição para', API_URL);
+        console.log('[useSimplificar] Dados que serão enviados:', {
+          textLength: conteudoTrimmed.length,
+          textPreview: conteudoTrimmed.substring(0, 100)
+        });
+        
         const res = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: conteudo }),
+          body: JSON.stringify({ text: conteudoTrimmed }),
         });
 
-        console.log('[useSimplificar] Status da resposta:', res.status);
+        console.log('[useSimplificar] Resposta recebida - Status:', res.status);
+        console.log('[useSimplificar] Headers da resposta:', {
+          contentType: res.headers.get('content-type'),
+          ok: res.ok
+        });
 
         if (!res.ok) {
           throw new Error(`Erro ${res.status}: ${res.statusText}`);
@@ -55,19 +87,24 @@ export function useSimplificar(conteudoId?: string) {
 
         setResposta(dados);
         await salvarNoCache(cacheId, dados);
-      } catch (err) {
-        console.error('[useSimplificar] Erro:', err);
-        setErro(err instanceof Error ? err.message : String(err));
-      } finally {
-        setCarregando(false);
-      }
+       } catch (err) {
+         console.error('[useSimplificar] Erro:', {
+           erro: err instanceof Error ? err.message : String(err),
+           stack: err instanceof Error ? err.stack : undefined,
+           tipo: err instanceof TypeError ? 'TypeError (possível CORS ou rede)' : 'Outro erro'
+         });
+         setErro(err instanceof Error ? err.message : String(err));
+       } finally {
+         setCarregando(false);
+       }
     },
     [obterDoCache, salvarNoCache, conteudoId]
   );
 
   const carregarOQueMuda = useCallback(
     async (conteudo: string, id?: string): Promise<RespostaStructurada | null> => {
-      const cacheId = id || conteudoId || btoa(conteudo).slice(0, 16);
+      const conteudoTrimmed = conteudo.trim();
+      const cacheId = id || conteudoId || criarCacheId(conteudoTrimmed);
 
       const doCache = obterDoCache(cacheId);
       if (doCache?.oQueMudaPraMim) {
@@ -80,7 +117,7 @@ export function useSimplificar(conteudoId?: string) {
         const res = await fetch(API_URL_O_QUE_MUDA, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: conteudo }),
+          body: JSON.stringify({ text: conteudoTrimmed }),
         });
 
         console.log('[useSimplificar] Status da resposta O que muda:', res.status);

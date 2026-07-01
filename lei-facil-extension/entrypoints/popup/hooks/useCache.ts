@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import type { RespostaStructurada } from '../types';
 
+declare const chrome: any;
+
 const CACHE_KEY = 'lei_facil_cache';
 const MAX_CACHE_SIZE = 10;
 const PROMPT_VERSION = 1;

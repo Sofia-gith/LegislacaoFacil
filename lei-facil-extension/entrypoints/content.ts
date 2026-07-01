@@ -88,29 +88,64 @@ function criarBotao() {
   link.style.cursor = 'pointer';
   link.style.color = '#0056b3';
   
-  link.addEventListener('click', (e) => {
-    e.preventDefault();
-    console.log('[Content] Botão clicado!');
-    
-    const allCustomStyle = document.querySelectorAll('.customStyle');
-    const conteudoDiv = allCustomStyle.length > 1 ? allCustomStyle[1] : allCustomStyle[0];
-    
-    if (!conteudoDiv) {
-      console.error('[Content] ❌ Div de conteúdo não encontrado');
-      alert('Conteúdo não encontrado na página');
-      return;
-    }
-    
-    console.log('[Content] ✓ Div encontrada (índice ' + (allCustomStyle.length > 1 ? '1' : '0') + ')');
-    console.log('[Content] Altura (scrollHeight):', (conteudoDiv as HTMLElement).scrollHeight, 'px');
-    
-    const conteudo = extrairTextoCompleto(conteudoDiv);
-    
-    console.log('[Content] ✓ Conteúdo extraído - Tamanho total: ' + conteudo.length + ' caracteres');
-    console.log('[Content] ========== CONTEÚDO COMPLETO ENVIADO ==========');
-    console.log(conteudo);
-    console.log('[Content] ========== FIM DO CONTEÚDO ==========');
-    console.log('[Content] Enviando mensagem para background...');
+   link.addEventListener('click', (e) => {
+     e.preventDefault();
+     console.log('[Content] Botão clicado!');
+     
+     let conteudoDiv: Element | null = null;
+     let conteudo: string = '';
+     
+     const allCustomStyle = document.querySelectorAll('.customStyle');
+     console.log('[Content] Elementos .customStyle encontrados:', allCustomStyle.length);
+     
+     if (allCustomStyle.length > 0) {
+       conteudoDiv = allCustomStyle.length > 1 ? allCustomStyle[1] : allCustomStyle[0];
+       conteudo = extrairTextoCompleto(conteudoDiv);
+       console.log('[Content] Conteúdo extraído de .customStyle:', conteudo.length, 'caracteres');
+     }
+     
+     if (!conteudo.trim()) {
+       console.log('[Content] Conteúdo de .customStyle vazio, tentando alternativas...');
+       
+       const alternatives = [
+         document.querySelector('[class*="content"] [class*="lei"]'),
+         document.querySelector('[class*="texto"]'),
+         document.querySelector('[class*="corpo"]'),
+         document.querySelector('[class*="artigo"]'),
+         document.querySelector('main'),
+         document.querySelector('article'),
+         document.querySelector('[role="main"]')
+       ];
+       
+       for (const alt of alternatives) {
+         if (alt) {
+           const altConteudo = extrairTextoCompleto(alt);
+           if (altConteudo.trim().length > 100) {
+             conteudoDiv = alt;
+             conteudo = altConteudo;
+             console.log('[Content] Conteúdo encontrado em seletor alternativo, tamanho:', conteudo.length);
+             break;
+           }
+         }
+       }
+     }
+     
+     if (!conteudo.trim()) {
+       console.error('[Content] ❌ Nenhum conteúdo válido encontrado em nenhum seletor');
+       alert('Conteúdo não encontrado na página. Certifique-se de estar na página de uma lei.');
+       return;
+     }
+     
+     console.log('[Content] ✓ Div encontrada');
+     if (conteudoDiv) {
+       console.log('[Content] Altura (scrollHeight):', (conteudoDiv as HTMLElement).scrollHeight, 'px');
+     }
+     
+     console.log('[Content] ✓ Conteúdo extraído - Tamanho total: ' + conteudo.length + ' caracteres');
+     console.log('[Content] ========== CONTEÚDO COMPLETO ENVIADO ==========');
+     console.log(conteudo);
+     console.log('[Content] ========== FIM DO CONTEÚDO ==========');
+     console.log('[Content] Enviando mensagem para background...');
     
     try {
       chrome.runtime.sendMessage(

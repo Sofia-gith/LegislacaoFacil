@@ -63,6 +63,9 @@ func main() {
 	simplificarHandler := handler.NewSimplificarHandler(geminiClient)
 	mux.Handle("/simplificar", corsMiddleware(allowedOrigin, simplificarHandler))
 
+	oQueMudaHandler := handler.NewOQueMudaHandler(geminiClient)
+	mux.Handle("/o-que-muda", corsMiddleware(allowedOrigin, oQueMudaHandler))
+
 	log.Println("[Main] Rotas configuradas")
 
 	addr := fmt.Sprintf(":%s", port)
@@ -72,8 +75,6 @@ func main() {
 
 func corsMiddleware(allowedOrigin string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Se ALLOWED_ORIGIN está vazio, permite todas (desenvolvimento)
-		// Se tiver valor, usa esse valor específico
 		if allowedOrigin != "" {
 			w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
 		} else {

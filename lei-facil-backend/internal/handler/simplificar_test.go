@@ -12,12 +12,25 @@ import (
 )
 
 type mockSimplifier struct {
-	result string
-	err    error
+	result            interface{}
+	simplifyErr       error
+	structuredErr     error
+	analyzeImpactErr  error
 }
 
 func (m *mockSimplifier) Simplify(_ context.Context, _ string) (string, error) {
-	return m.result, m.err
+	if str, ok := m.result.(string); ok {
+		return str, m.simplifyErr
+	}
+	return "", m.simplifyErr
+}
+
+func (m *mockSimplifier) SimplifyStructured(_ context.Context, _ string) (interface{}, error) {
+	return m.result, m.structuredErr
+}
+
+func (m *mockSimplifier) AnalyzeImpact(_ context.Context, _ string) (interface{}, error) {
+	return m.result, m.analyzeImpactErr
 }
 
 func TestSimplificarHandler_MethodNotAllowed(t *testing.T) {
@@ -63,7 +76,7 @@ func TestSimplificarHandler_EmptyText(t *testing.T) {
 }
 
 func TestSimplificarHandler_GeminiError(t *testing.T) {
-	h := handler.NewSimplificarHandler(&mockSimplifier{err: context.DeadlineExceeded})
+	h := handler.NewSimplificarHandler(&mockSimplifier{structuredErr: context.DeadlineExceeded})
 
 	body, _ := json.Marshal(map[string]string{"text": "Art. 5° - todos são iguais perante a lei"})
 	req := httptest.NewRequest(http.MethodPost, "/simplificar", bytes.NewBuffer(body))
@@ -78,8 +91,12 @@ func TestSimplificarHandler_GeminiError(t *testing.T) {
 }
 
 func TestSimplificarHandler_Success(t *testing.T) {
-	expected := "Todos têm os mesmos direitos."
-	h := handler.NewSimplificarHandler(&mockSimplifier{result: expected})
+	expectedResp := map[string]interface{}{
+		"resumo": "Todos têm os mesmos direitos.",
+		"corpo":  "Ninguém pode ser discriminado.",
+		"pontos": []string{"Igualdade perante a lei", "Sem discriminação"},
+	}
+	h := handler.NewSimplificarHandler(&mockSimplifier{result: expectedResp})
 
 	body, _ := json.Marshal(map[string]string{"text": "Art. 5° - todos são iguais perante a lei"})
 	req := httptest.NewRequest(http.MethodPost, "/simplificar", bytes.NewBuffer(body))
@@ -92,11 +109,11 @@ func TestSimplificarHandler_Success(t *testing.T) {
 		t.Errorf("expected 200, got %d", rec.Code)
 	}
 
-	var resp map[string]string
+	var resp map[string]interface{}
 	if err := json.NewDecoder(rec.Body).Decode(&resp); err != nil {
 		t.Fatalf("failed to decode response: %v", err)
 	}
-	if resp["texto_simplificado"] != expected {
-		t.Errorf("expected result %q, got %q", expected, resp["texto_simplificado"])
+	if resp["resumo"] != "Todos têm os mesmos direitos." {
+		t.Errorf("expected resumo %q, got %q", "Todos têm os mesmos direitos.", resp["resumo"])
 	}
 }

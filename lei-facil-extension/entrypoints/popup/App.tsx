@@ -3,14 +3,14 @@ import { ErrorMessage } from './components/ErrorMessage';
 import { LoadingContent } from './components/LoadingContent';
 import { InitialState } from './components/InitialState';
 import { LoadingState } from './components/LoadingState';
-import { ResultState } from './components/ResultState';
+import { TabsContainer } from './components/TabsContainer';
 import { useConteudoPagina } from './hooks/useConteudoPagina';
 import { useSimplificar } from './hooks/useSimplificar';
 import './App.css';
 
 function App() {
   const { conteudo, erro: erroConteudo } = useConteudoPagina();
-  const { carregando, resposta, erro, simplificar, limpar } = useSimplificar();
+  const { carregando, resposta, erro, simplificar, carregarOQueMuda, limpar } = useSimplificar();
 
   return (
     <div className="lf-root">
@@ -36,7 +36,11 @@ function App() {
       {carregando && <LoadingState />}
 
       {resposta && !carregando && (
-        <ResultState resposta={resposta} erro={erro} onVoltar={limpar} />
+        <TabsContainer
+          linguagemSimples={resposta}
+          onVoltar={limpar}
+          onCarregarOQueMuda={() => carregarOQueMuda(conteudo)}
+        />
       )}
     </div>
   );

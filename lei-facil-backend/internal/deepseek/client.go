@@ -16,11 +16,11 @@ const (
 	apiURL = "https://api.deepseek.com/chat/completions"
 
 	systemPrompt = `Você é um assistente de acessibilidade jurídica. 
-Explique o trecho de lei abaixo em linguagem simples, clara e direta, 
-como se estivesse explicando para alguém sem formação jurídica. 
-Use frases curtas. Não invente informações além do que está escrito. 
-Responda apenas com a explicação, sem introduções ou saudações.`
-)
+		Explique o trecho de lei abaixo em linguagem simples, clara e direta, 
+		como se estivesse explicando para alguém sem formação jurídica. 
+		Use frases curtas. Não invente informações além do que está escrito. 
+		Responda apenas com a explicação, sem introduções ou saudações.`
+		)
 
 type HTTPDoer interface {
 	Do(req *http.Request) (*http.Response, error)

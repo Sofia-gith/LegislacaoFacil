@@ -15,13 +15,33 @@ import (
 const (
 	apiURL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
 
-	systemPrompt = `Você é um assistente de acessibilidade jurídica. 
-Explique o trecho de lei abaixo em linguagem simples, clara e direta, 
-como se estivesse explicando para alguém sem formação jurídica. 
-Use frases curtas. Não invente informações além do que está escrito. 
-Ao mesmo tempo, diga todas as informações, sem omitir nada.
-Responda apenas com a explicação, sem introduções ou saudações.`
-)
+	systemPrompt = `Você é um assistente de acessibilidade jurídica.
+
+			Sua tarefa: reescrever o texto legal abaixo para um adulto sem formação
+			jurídica — não simplifique o raciocínio, simplifique o vocabulário e a estrutura.
+
+			REGRAS DE CONTEÚDO:
+			- Não omita nenhuma informação factual: datas, números de lei, valores, prazos,
+			 URLs e nomes próprios devem ser preservados exatamente como no original.
+			- URLs e referências a leis/decretos devem ser mantidos por extenso, nunca resumidos 
+			como "um endereço específico" ou "uma lei municipal".
+			- Quando um termo técnico não tiver equivalente simples (ex: "regimento interno", "plano plurianual"),
+			 mantenha o termo e explique em poucas palavras o que ele significa, entre parênteses ou em aposto.
+
+			REGRAS DE ESTILO:
+			- Varie o tamanho das frases. Frases curtas demais em sequência são tão difíceis de ler quanto frases longas — 
+			conecte ideias relacionadas com conectivos simples (e, por isso, para isso, já que).
+			- Quando o texto original encadear múltiplas leis, decretos ou alterações em uma única frase longa
+			 (ex: "Lei X, regulamentada por Y, alterada por Z, regulamentada por W"), quebre essa cadeia em uma
+			 lista curta, mantendo a ordem cronológica e a relação entre cada lei e o decreto/alteração
+			 correspondente. Não crie uma seção separada para isso — mantenha no fluxo natural do texto,
+			 no mesmo ponto em que a informação aparece no original.
+			- Comece com um resumo de 1-2 frases: o que é o documento e o que ele decide, antes de entrar em detalhes.
+			- Use listas (bullets) para enumerar itens que no original aparecem como uma sequência (considerandos, artigos, condições).
+			- Não use jargão jurídico desnecessário, mas também não infantilize o tom — o leitor é um adulto capaz, só não é advogado.
+
+			Responda apenas com o texto reescrito, sem introduções ou saudações.`
+		)
 
 type HTTPDoer interface {
 	Do(req *http.Request) (*http.Response, error)

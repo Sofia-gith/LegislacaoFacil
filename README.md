@@ -1,10 +1,8 @@
-# Extensão de navegador com WXT + React
+# Lei Fácil — Extensão de navegador com WXT + React
 
+Sistema que ajuda a ler e entender o conteúdo do portal de legislação municipal usando IA generativa.
 
-Esse respositorio é um sistema que ajuda a ler e entender o conteúdo do portal da legislação municipal
-
-
-## Lei Fácil 
+## 📜 Lei Fácil 
 
 Extensão de navegador para o portal de legislação municipal de São Paulo ([legislacao.prefeitura.sp.gov.br](https://legislacao.prefeitura.sp.gov.br)), com o objetivo de democratizar o acesso à informação jurídica.
 
@@ -12,115 +10,190 @@ Desenvolvida como projeto do programa **Melhores Práticas de Estágio**, dentro
 
 ---
 
-## Funcionalidades
+## ✨ Funcionalidades
 
-* **Glossário jurídico** — ao passar o mouse sobre termos técnicos, exibe uma tooltip com a definição em linguagem simples
-
-* **Simplificação de texto via IA** — selecione qualquer trecho da lei e receba uma explicação acessível gerada pelo Gemini
-
----
-
-## Stack
-
-* [WXT](https://wxt.dev/) — build tool para extensões (Manifest V3)
-
-* TypeScript
-
-* Shadow DOM — isolamento de CSS da UI injetada
-
-* Google Gemini API — simplificação de texto
+* **Simplificação de texto via IA** — Clique no botão "Simplificar" na página da lei para receber:
+  - Versão em **linguagem simples** (acessível para leigos)
+  - **Pontos principais** da legislação
+  - **"O que muda pra mim"** (impacto prático na vida do cidadão)
 
 ---
 
-## Como rodar localmente
+## 🛠️ Stack
+
+* **Frontend**:
+  - [WXT](https://wxt.dev/) — build tool para extensões de navegador (Manifest V3)
+  - [React 19](https://react.dev/) — UI components
+  - TypeScript — type safety
+  
+* **Backend**:
+  - [Go 1.25+](https://golang.org/) — servidor HTTP
+  - [Google Gemini API](https://ai.google.dev/) — simplificação de texto com IA
+  - [DeepSeek API](https://www.deepseek.com/) — alternativa (não integrada)
+
+---
+
+## 🚀 Como rodar localmente
 
 ### Pré-requisitos
 
-* Node.js 18+
-
-* npm
+* **Node.js 18+** (para frontend)
+* **Go 1.25+** (para backend)
+* **npm** (gerenciador de pacotes)
+* **Chave de API do Google Gemini** (obter em [aistudio.google.com](https://aistudio.google.com))
 
 ### Instalação
 
 ```bash
 git clone https://github.com/seu-usuario/lei-facil.git
-cd lei-facil/lei-facil-extension
+cd LeiaFacil
+```
+
+#### Frontend
+
+```bash
+cd lei-facil-extension
 npm install
+```
+
+#### Backend
+
+```bash
+cd lei-facil-backend
+go mod download
 ```
 
 ### Desenvolvimento
 
+#### Frontend (com hot reload)
+
 ```bash
+cd lei-facil-extension
 npm run dev
 ```
 
-O Chrome abrirá automaticamente com a extensão carregada e hot reload ativo.
+O navegador abrirá automaticamente em `chrome://extensions` com a extensão carregada e hot reload ativo.
 
-### Build
+#### Backend
+
+Primeiro, configure o arquivo `.env`:
 
 ```bash
+cd lei-facil-backend
+cp .env.example .env
+# Edite .env e adicione sua GEMINI_API_KEY
+```
+
+Depois, inicie o servidor:
+
+```bash
+cd lei-facil-backend
+go run ./cmd/main.go
+```
+
+O servidor estará disponível em `http://localhost:8000`.
+
+### Build para produção
+
+#### Frontend
+
+```bash
+cd lei-facil-extension
 npm run build
 ```
 
-O bundle final estará em `.output/chrome-mv3/`.
+O bundle final estará em `.output/chrome-mv3/` (Chrome) ou `.output/firefox-mv3/` (Firefox).
 
-### Carregar no Chrome manualmente
+#### Carregar a extensão no Chrome
 
 1. Abra `chrome://extensions`
-
 2. Ative o **Modo do desenvolvedor**
-
 3. Clique em **Carregar sem compactação**
+4. Selecione a pasta `lei-facil-extension/.output/chrome-mv3`
 
-4. Selecione a pasta `.output/chrome-mv3`
+#### Backend
+
+```bash
+cd lei-facil-backend
+go build -o lei-facil ./cmd/main.go
+./lei-facil
+```
+
+Para build com Docker:
+
+```bash
+docker build -t lei-facil-backend .
+docker run -p 8000:8000 -e GEMINI_API_KEY=sua_chave lei-facil-backend
+```
 
 ---
 
 ## 📁 Estrutura do projeto
 
-# Estrutura de Pastas — Lei Fácil
-
 ```
 LeiaFacil/
-│
-├── lei-facil-extension/          # Extensão de navegador (WXT + TypeScript)
-│   │
+├── lei-facil-extension/                    # Extensão de navegador (WXT + React + TypeScript)
 │   ├── public/
-│   │   └── glossario.json        # Termos jurídicos e definições (estático)
+│   │   └── icons/                          # Ícones da extensão
 │   │
-│   ├── src/
-│   │   ├── entrypoints/
-│   │   │   ├── content.ts        # Injeta UI na página, observa o DOM
-│   │   │   └── background.ts     # Service worker — chama o backend
+│   ├── src/ → entrypoints/
+│   │   ├── background.ts                   # Service worker da extensão
+│   │   ├── content.ts                      # Script injetado na página
 │   │   │
-│   │   ├── components/
-│   │   │   ├── Tooltip.ts        # Tooltip do glossário (Shadow DOM)
-│   │   │   └── PainelSimplificar.ts  # Painel flutuante de simplificação
-│   │   │
-│   │   └── utils/
-│   │       ├── glossario.ts      # Highlight de termos via TreeWalker
-│   │       └── api.ts            # Chamadas ao backend Go
+│   │   └── popup/                          # Interface do popup (React)
+│   │       ├── App.tsx                     # Componente raiz
+│   │       ├── main.tsx                    # Entry point do popup
+│   │       ├── types.ts                    # Tipos TypeScript compartilhados
+│   │       │
+│   │       ├── components/
+│   │       │   ├── Header.tsx              # Cabeçalho do popup
+│   │       │   ├── TabsContainer.tsx       # Gerenciador de abas
+│   │       │   ├── TabBar.tsx              # Seletor de abas
+│   │       │   ├── ConteudoLinguagemSimples.tsx
+│   │       │   ├── ConteudoPontosPrincipais.tsx
+│   │       │   ├── ConteudoOQueMuda.tsx
+│   │       │   ├── InitialState.tsx        # Estado inicial (antes de clicar)
+│   │       │   ├── LoadingState.tsx        # Carregando...
+│   │       │   ├── LoadingContent.tsx      # Skeleton loading
+│   │       │   ├── ResultState.tsx         # Resultado pronto
+│   │       │   ├── ErrorMessage.tsx        # Mensagem de erro
+│   │       │   └── TextoFormatado.tsx      # Formatação de texto
+│   │       │
+│   │       ├── hooks/
+│   │       │   ├── useSimplificar.ts       # Lógica de chamada à API
+│   │       │   ├── useConteudoPagina.ts    # Recupera conteúdo do background
+│   │       │   └── useCache.ts             # Gerencia cache de requisições
+│   │       │
+│   │       └── utils/
+│   │           └── formatacao.tsx          # Funções de formatação
 │   │
-│   ├── wxt.config.ts             # Configuração do WXT (permissões, hosts)
+│   ├── wxt.config.ts                       # Configuração do WXT
 │   ├── tsconfig.json
-│   └── package.json
+│   ├── package.json
+│   └── manifest.json (gerado)
 │
-├── lei-facil-backend/            # Backend (Go)
-│   │
+├── lei-facil-backend/                      # Backend em Go
 │   ├── cmd/
-│   │   └── main.go               # Entrypoint do servidor
+│   │   └── main.go                         # Entrypoint do servidor
 │   │
 │   ├── internal/
 │   │   ├── handler/
-│   │   │   └── simplificar.go    # Handler do endpoint POST /simplificar
+│   │   │   ├── simplificar.go              # Handler HTTP dos endpoints
+│   │   │   └── simplificar_test.go         # Testes dos handlers
 │   │   │
-│   │   └── gemini/
-│   │       └── client.go         # Cliente para a API do Gemini
+│   │   ├── gemini/
+│   │   │   ├── client.go                   # Cliente Google Gemini
+│   │   │   └── client_test.go              # Testes do cliente Gemini
+│   │   │
+│   │   └── deepseek/
+│   │       └── client.go                   # Cliente DeepSeek (não integrado)
 │   │
-│   ├── Dockerfile                # Multi-stage build para deploy
-│   ├── .env.example              # Exemplo de variáveis de ambiente
-│   ├── .env                      # Chave de API real (nunca sobe pro git)
-│   └── go.mod
+│   ├── go.mod                              # Dependências Go
+│   ├── go.sum
+│   ├── Dockerfile                          # Build multi-stage para produção
+│   ├── .env.example                        # Variáveis de ambiente (exemplo)
+│   ├── .env                                # Variáveis de ambiente (não commitar)
+│   └── CONTRATO_API.md                     # Documentação dos endpoints
 │
 ├── .gitignore
 └── README.md
@@ -128,54 +201,194 @@ LeiaFacil/
 
 ---
 
-## Responsabilidade de cada arquivo
+## 📋 Responsabilidade de cada arquivo
 
-### Extensão
+### Frontend (lei-facil-extension)
 
-| Arquivo | O que faz |
-|---|---|
-| `content.ts` | Roda na página, usa MutationObserver para detectar o texto da lei, injeta a UI |
-| `background.ts` | Service worker — único ponto que se comunica com o backend |
-| `Tooltip.ts` | Componente de tooltip isolado em Shadow DOM |
-| `PainelSimplificar.ts` | Painel que exibe o texto simplificado retornado pela IA |
-| `glossario.ts` | Percorre o DOM com TreeWalker e envolve termos jurídicos em elementos clicáveis |
-| `api.ts` | Funções para chamar o backend (fetch para POST /simplificar) |
-| `glossario.json` | JSON estático com os termos e definições — não precisa de IA |
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| **content.ts** | Script injetado na página que: injeta botão "Simplificar", extrai o conteúdo da lei ao clicar, envia para o background |
+| **background.ts** | Service worker que armazena conteúdo extraído e abre o popup quando solicitado |
+| **App.tsx** | Componente raiz que gerencia estado global do popup |
+| **useSimplificar.ts** | Hook customizado que chama o backend, gerencia cache e controla estado de abas |
+| **useConteudoPagina.ts** | Hook que recupera o conteúdo extraído do background script |
+| **useCache.ts** | Hook que gerencia cache local em `chrome.storage` com versionamento de prompts |
+| **TabsContainer.tsx** | Renderiza 3 abas: "Linguagem Simples", "Pontos Principais", "O que Muda pra Mim" |
+| **Componentes** | Header, TabBar, estados (Loading, Result, Error, Initial) e TextoFormatado |
+| **types.ts** | Interfaces compartilhadas (RespostaAPI, EstadoAbas, AbaTipo) |
 
-### Backend
+### Backend (lei-facil-backend)
 
-| Arquivo | O que faz |
-|---|---|
-| `main.go` | Inicia o servidor HTTP, registra as rotas |
-| `simplificar.go` | Recebe o texto, valida, chama o cliente Gemini, retorna a resposta |
-| `client.go` | Encapsula a chamada à API do Gemini com a chave protegida |
-| `.env` | `GEMINI_API_KEY=...` — nunca exposta ao usuário |
-| `Dockerfile` | Build de produção — imagem Alpine pequena (~10MB) |
+| Arquivo | Responsabilidade |
+|---------|------------------|
+| **main.go** | Inicia servidor HTTP, configura CORS, registra rotas, carrega variáveis `.env` |
+| **handler/simplificar.go** | 2 endpoints HTTP: `POST /simplificar` e `POST /o-que-muda`, validação de entrada |
+| **handler/simplificar_test.go** | Testes unitários dos handlers |
+| **gemini/client.go** | Cliente Google Gemini com 3 métodos: `Simplify`, `SimplifyStructured`, `AnalyzeImpact` |
+| **gemini/client_test.go** | Testes com mocks HTTP do cliente Gemini |
+| **deepseek/client.go** | Cliente DeepSeek para IA (não integrado aos endpoints) |
+| **.env** | Variáveis de ambiente: `GEMINI_API_KEY`, `PORT`, `ALLOWED_ORIGIN` |
+| **Dockerfile** | Multi-stage build otimizado (base Go slim → imagem Alpine ~10MB) |
 
 ---
 
-## Variáveis de ambiente do backend
+## 🔑 Configuração de Variáveis de Ambiente
+
+### Backend (lei-facil-backend/.env)
 
 ```env
-# .env.example
-GEMINI_API_KEY=sua_chave_aqui
-PORT=8080
-ALLOWED_ORIGIN=chrome-extension://ID_DA_SUA_EXTENSAO
+# Obter em https://aistudio.google.com/apikey
+GEMINI_API_KEY=AIzaSyD_xxxxxxxxxxxxxxxxxxxxxx
+
+# Porta do servidor (padrão: 8000)
+PORT=8000
+
+# Origem CORS permitida (extensão Chrome)
+# Formato: chrome-extension://ID_DA_EXTENSAO
+# Obter ID em chrome://extensions (após instalar a extensão)
+ALLOWED_ORIGIN=chrome-extension://xxxxxxxxxxxxxxxxxx
+
+# Opcional: URL do backend (frontend)
+# BACKEND_URL=http://localhost:8000
 ```
 
-> `ALLOWED_ORIGIN` é importante para que o backend só aceite requisições da sua extensão (CORS).
+### Como obter a Chave de API do Google Gemini
 
-##  Configuração da API
+1. Acesse [aistudio.google.com](https://aistudio.google.com)
+2. Clique em **Get API key**
+3. Clique em **Create API key in new project**
+4. Copie a chave e cole em `.env`
 
-A chave do Gemini **não é armazenada na extensão**. As chamadas passam por um backend próprio para proteger a chave.
+### Como obter o ID da Extensão
 
-> Instruções de configuração do backend em breve.
+1. Após instalar a extensão no Chrome, abra `chrome://extensions`
+2. O ID da extensão estará abaixo do nome (ex: `xxxxxxxxxxxxxxxxxx`)
+3. Configure no `ALLOWED_ORIGIN`
 
 ---
 
-## ⚠️ Aviso
+## 🔐 Segurança
 
-As simplificações geradas por IA são um **apoio à compreensão** e não substituem assessoria jurídica profissional.
+* A chave do Gemini **nunca é armazenada na extensão**
+* Todas as chamadas passam por um backend próprio que protege a chave
+* CORS está configurado para aceitar apenas requisições da sua extensão
+* As requisições são validadas no servidor (tamanho máximo, campos obrigatórios)
+
+---
+
+## 📡 API do Backend
+
+### Endpoints
+
+#### POST /simplificar
+Simplifica o texto da lei em três aspectos.
+
+**Request:**
+```json
+{
+  "text": "Artigo 1º - Esta Lei dispõe sobre..."
+}
+```
+
+**Response:**
+```json
+{
+  "resumo": "Em palavras simples: esta lei trata sobre...",
+  "corpo": "Explicação acessível do conteúdo...",
+  "pontos": [
+    "Ponto importante 1",
+    "Ponto importante 2"
+  ]
+}
+```
+
+**Validações:**
+- Campo `text` obrigatório
+- Máximo 50.000 caracteres
+- Retorna HTTP 400 se inválido
+
+#### POST /o-que-muda
+Analisa o impacto prático da lei na vida do cidadão.
+
+**Request:**
+```json
+{
+  "text": "Artigo 1º - Esta Lei dispõe sobre..."
+}
+```
+
+**Response:**
+```json
+{
+  "resumo": "Impacto geral da lei...",
+  "corpo": "Como essa lei afeta sua vida no dia a dia..."
+}
+```
+
+---
+
+## ⚙️ Tecnologias Detalhadas
+
+### Frontend
+- **React 19.2.4** — Framework UI
+- **WXT 0.20.27** — Build tool para extensões
+- **TypeScript 5.9.3** — Linguagem tipada
+- **Lucide React** — Ícones
+
+### Backend
+- **Go 1.25.4** — Linguagem de programação
+- **Google AI SDK** — Integração com Gemini
+- **net/http** — Servidor HTTP nativo
+- **github.com/joho/godotenv** — Carregamento de variáveis de ambiente
+
+---
+
+## 🧪 Testes
+
+### Backend
+```bash
+cd lei-facil-backend
+go test ./...
+```
+
+Cobertura atual:
+- Handler HTTP: 5 testes
+- Cliente Gemini: 8 testes
+
+### Frontend
+❌ **Sem testes automatizados** (oportunidade de melhoria)
+
+---
+
+## 📝 Limitações Conhecidas e TODO
+
+- [ ] Frontend sem testes automatizados (Jest/Vitest)
+- [ ] Sem logging estruturado (usa console.log)
+- [ ] Content script não usa MutationObserver (não detecta carregamento dinâmico)
+- [ ] DeepSeek client não integrado aos handlers
+- [ ] Sem CI/CD (GitHub Actions)
+- [ ] Sem documentação JSDoc nos hooks
+- [ ] Cache sem TTL (time-to-live)
+- [ ] Sem tratamento de erros com tipos discriminados
+- [ ] Sem acessibilidade (ARIA labels)
+
+---
+
+## ⚖️ Aviso Legal
+
+As simplificações geradas por IA são um **apoio à compreensão** e **não substituem assessoria jurídica profissional**. Use com responsabilidade.
+
+---
+
+## 💡 Como Contribuir
+
+Este projeto está aberto a contribuições! Se encontrou um bug ou tem uma ideia de melhoria:
+
+1. Abra uma [Issue](https://github.com/seu-usuario/lei-facil/issues)
+2. Faça um fork e crie uma branch (`git checkout -b feature/sua-feature`)
+3. Commit suas mudanças (`git commit -m 'Add: sua feature'`)
+4. Push para a branch (`git push origin feature/sua-feature`)
+5. Abra um Pull Request
 
 ---
 

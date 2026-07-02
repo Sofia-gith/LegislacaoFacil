@@ -1,5 +1,6 @@
 import { AlertCircle, Loader } from 'lucide-react';
 import type { RespostaStructurada } from '../types';
+import { TextoFormatado } from './TextoFormatado';
 
 interface ConteudoOQueMudaProps {
   dados: RespostaStructurada | null;
@@ -42,7 +43,9 @@ export function ConteudoOQueMuda({ dados, carregando, erro, onCarregar }: Conteu
 
           <div className="lf-corpo-box">
             <p className="lf-corpo-label">Detalhes</p>
-            <div className="lf-corpo-text">{dados.corpo}</div>
+            <div className="lf-corpo-text">
+              <TextoFormatado conteudo={dados.corpo} />
+            </div>
           </div>
         </div>
       </div>

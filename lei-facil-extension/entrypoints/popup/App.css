@@ -464,3 +464,52 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+.lf-texto-formatado {
+  font-size: 13px;
+  color: #334155;
+  line-height: 1.7;
+  word-break: break-word;
+}
+
+.lf-texto-formatado p {
+  margin: 0 0 12px 0;
+}
+
+.lf-texto-formatado strong {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.lf-texto-formatado code {
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #0f172a;
+}
+
+.lf-formatted-list {
+  list-style: none;
+  padding: 0 0 0 16px;
+  margin: 12px 0;
+}
+
+.lf-formatted-list-item {
+  margin: 6px 0;
+  padding-left: 8px;
+  position: relative;
+}
+
+.lf-formatted-list-item::before {
+  content: '•';
+  position: absolute;
+  left: -14px;
+  color: #1a56a0;
+  font-weight: bold;
+}
+
+.lf-paragraph-space {
+  height: 8px;
+}

@@ -1,5 +1,6 @@
 import { FileText } from 'lucide-react';
 import type { RespostaStructurada } from '../types';
+import { TextoFormatado } from './TextoFormatado';
 
 interface ConteudoLinguagemSimplesProps {
   dados: RespostaStructurada;
@@ -19,7 +20,9 @@ export function ConteudoLinguagemSimples({ dados }: ConteudoLinguagemSimplesProp
 
         <div className="lf-corpo-box">
           <p className="lf-corpo-label">Texto simplificado</p>
-          <div className="lf-corpo-text">{dados.corpo}</div>
+          <div className="lf-corpo-text">
+            <TextoFormatado conteudo={dados.corpo} />
+          </div>
         </div>
       </div>
     </div>

@@ -10,7 +10,7 @@ describe('Header', () => {
 
   it('deve conter texto Lei ou Fácil', () => {
     render(<Header />);
-    const textElement = screen.getByText(/lei|fácil/i) || screen.getByText(/./);
+    const textElement = screen.getByText(/lei|fácil/i);
     expect(textElement).toBeInTheDocument();
   });
 
@@ -22,7 +22,7 @@ describe('Header', () => {
 
   it('deve ter estrutura básica de header', () => {
     const { container } = render(<Header />);
-    const firstElement = container.firstChild;
+    const firstElement = container.firstChild as Element;
     expect(firstElement?.className || firstElement?.tagName).toBeTruthy();
   });
 });

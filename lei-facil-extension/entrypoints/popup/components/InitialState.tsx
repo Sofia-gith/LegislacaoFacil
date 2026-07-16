@@ -33,8 +33,7 @@ export function InitialState({ conteudo, erro, carregando, onSimplificar }: Init
       </div>
 
       <p className="lf-desc">
-        Essa lei pode ser difícil de entender. Clique abaixo para receber uma
-        versão simples, sem jargões jurídicos.
+        Textos de lei costumam ser difíceis de entender. Quer uma versão simplificada?
       </p>
 
       <div className="lf-feature-grid">

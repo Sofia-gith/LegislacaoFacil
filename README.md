@@ -1,12 +1,18 @@
-# Lei Fácil — Extensão de navegador com WXT + React
+# LeiaFácil — Extensão de navegador com WXT + React
 
 Sistema que ajuda a ler e entender o conteúdo do portal de legislação municipal usando IA generativa.
 
-## 📜 Lei Fácil 
+## 📜 LeiaFácil
 
 Extensão de navegador para o portal de legislação municipal de São Paulo ([legislacao.prefeitura.sp.gov.br](https://legislacao.prefeitura.sp.gov.br)), com o objetivo de democratizar o acesso à informação jurídica.
 
 Desenvolvida como projeto do programa **Melhores Práticas de Estágio**, dentro do tema **"São Paulo Plural"** — acessibilidade para pessoas sem formação jurídica, idosos e pessoas com baixa escolaridade.
+
+---
+
+## ⚖️ Aviso Legal
+
+As simplificações geradas por IA são um **apoio à compreensão** e **não substituem assessoria jurídica profissional**. Use com responsabilidade.
 
 ---
 
@@ -25,11 +31,12 @@ Desenvolvida como projeto do programa **Melhores Práticas de Estágio**, dentro
   - [WXT](https://wxt.dev/) — build tool para extensões de navegador (Manifest V3)
   - [React 19](https://react.dev/) — UI components
   - TypeScript — type safety
-  
+
 * **Backend**:
   - [Go 1.25+](https://golang.org/) — servidor HTTP
   - [Google Gemini API](https://ai.google.dev/) — simplificação de texto com IA
-  - [DeepSeek API](https://www.deepseek.com/) — alternativa (não integrada)
+
+> Um cliente para a **DeepSeek API** existe no código-fonte como alternativa de provedor, mas ainda não está integrado aos endpoints ativos — veja a seção [Roadmap](#-roadmap).
 
 ---
 
@@ -45,7 +52,7 @@ Desenvolvida como projeto do programa **Melhores Práticas de Estágio**, dentro
 ### Instalação
 
 ```bash
-git clone https://github.com/seu-usuario/lei-facil.git
+git clone https://github.com/seu-usuario/leiafacil.git
 cd LeiaFacil
 ```
 
@@ -186,7 +193,7 @@ LeiaFacil/
 │   │   │   └── client_test.go              # Testes do cliente Gemini
 │   │   │
 │   │   └── deepseek/
-│   │       └── client.go                   # Cliente DeepSeek (não integrado)
+│   │       └── client.go                   # Cliente DeepSeek (experimental, não integrado)
 │   │
 │   ├── go.mod                              # Dependências Go
 │   ├── go.sum
@@ -226,7 +233,7 @@ LeiaFacil/
 | **handler/simplificar_test.go** | Testes unitários dos handlers |
 | **gemini/client.go** | Cliente Google Gemini com 3 métodos: `Simplify`, `SimplifyStructured`, `AnalyzeImpact` |
 | **gemini/client_test.go** | Testes com mocks HTTP do cliente Gemini |
-| **deepseek/client.go** | Cliente DeepSeek para IA (não integrado aos endpoints) |
+| **deepseek/client.go** | Cliente DeepSeek para IA (experimental, não integrado aos endpoints) |
 | **.env** | Variáveis de ambiente: `GEMINI_API_KEY`, `PORT`, `ALLOWED_ORIGIN` |
 | **Dockerfile** | Multi-stage build otimizado (base Go slim → imagem Alpine ~10MB) |
 
@@ -355,28 +362,19 @@ Cobertura atual:
 - Handler HTTP: 5 testes
 - Cliente Gemini: 8 testes
 
-### Frontend
-❌ **Sem testes automatizados** (oportunidade de melhoria)
 
----
+## 🗺️ Roadmap
 
-## 📝 Limitações Conhecidas e TODO
+Próximos passos planejados para o projeto:
 
-- [ ] Frontend sem testes automatizados (Jest/Vitest)
-- [ ] Sem logging estruturado (usa console.log)
-- [ ] Content script não usa MutationObserver (não detecta carregamento dinâmico)
-- [ ] DeepSeek client não integrado aos handlers
-- [ ] Sem CI/CD (GitHub Actions)
-- [ ] Sem documentação JSDoc nos hooks
-- [ ] Cache sem TTL (time-to-live)
-- [ ] Sem tratamento de erros com tipos discriminados
-- [ ] Sem acessibilidade (ARIA labels)
-
----
-
-## ⚖️ Aviso Legal
-
-As simplificações geradas por IA são um **apoio à compreensão** e **não substituem assessoria jurídica profissional**. Use com responsabilidade.
+- [ ] Implementar logging estruturado
+- [ ] Adotar MutationObserver no content script para detectar carregamento dinâmico de conteúdo
+- [ ] Integrar o cliente DeepSeek como provedor alternativo de IA
+- [ ] Configurar CI/CD (GitHub Actions)
+- [ ] Adicionar documentação JSDoc nos hooks
+- [ ] Implementar TTL (time-to-live) no cache
+- [ ] Adotar tratamento de erros com tipos discriminados
+- [ ] Melhorar acessibilidade (ARIA labels)
 
 ---
 
@@ -384,7 +382,7 @@ As simplificações geradas por IA são um **apoio à compreensão** e **não su
 
 Este projeto está aberto a contribuições! Se encontrou um bug ou tem uma ideia de melhoria:
 
-1. Abra uma [Issue](https://github.com/seu-usuario/lei-facil/issues)
+1. Abra uma [Issue](https://github.com/seu-usuario/leiafacil/issues)
 2. Faça um fork e crie uma branch (`git checkout -b feature/sua-feature`)
 3. Commit suas mudanças (`git commit -m 'Add: sua feature'`)
 4. Push para a branch (`git push origin feature/sua-feature`)

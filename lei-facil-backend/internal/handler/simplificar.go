@@ -180,7 +180,7 @@ func writeJSON(w http.ResponseWriter, status int, body interface{}) {
 	json.NewEncoder(w).Encode(body)
 }
 
-// StatusHandler atende GET /status/{jobID} — não sabe nada sobre Gemini,
+
 // só consulta o JobStore. Um único endpoint serve tanto /simplificar
 // quanto /o-que-muda porque o próprio Job já guarda seu Type.
 type StatusHandler struct {

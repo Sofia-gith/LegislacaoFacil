@@ -21,6 +21,40 @@ function criarCacheId(conteudo: string): string {
   }
 }
 
+async function aguardarConclusao(jobId: string): Promise<RespostaStructurada> {
+  while (true) {
+    const res = await fetch(`http://localhost:8000/status/${jobId}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!res.ok) {
+      throw new Error(`Erro ao buscar status: ${res.status}`);
+    }
+
+    const job = await res.json();
+    console.log('[useSimplificar] Status do job:', job.status);
+
+    if (job.status === 'concluido') {
+      // The result is stored in job.resultado
+      if (job.resultado && typeof job.resultado === 'object') {
+        const resultado = job.resultado as RespostaStructurada;
+        if (resultado.resumo && resultado.corpo && Array.isArray(resultado.pontos)) {
+          return resultado;
+        }
+      }
+      throw new Error('Resultado do job está em formato inválido');
+    }
+
+    if (job.status === 'erro') {
+      throw new Error(job.erro || 'Erro desconhecido durante o processamento');
+    }
+
+    // Ainda processando, aguardar um pouco antes de tentar novamente
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+}
+
 export function useSimplificar(conteudoId?: string) {
   const [carregando, setCarregando] = useState(false);
   const [resposta, setResposta] = useState<RespostaStructurada | null>(null);
@@ -61,32 +95,33 @@ export function useSimplificar(conteudoId?: string) {
           textLength: conteudoTrimmed.length,
           textPreview: conteudoTrimmed.substring(0, 100)
         });
-        
+
+        // Step 1: Create job
         const res = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: conteudoTrimmed }),
         });
 
-        console.log('[useSimplificar] Resposta recebida - Status:', res.status);
-        console.log('[useSimplificar] Headers da resposta:', {
-          contentType: res.headers.get('content-type'),
-          ok: res.ok
-        });
+        console.log('[useSimplificar] Resposta de criação de job recebida - Status:', res.status);
 
         if (!res.ok) {
           throw new Error(`Erro ${res.status}: ${res.statusText}`);
         }
 
-        const dados: RespostaAPI = await res.json();
-        console.log('[useSimplificar] Dados recebidos:', dados);
+        const jobData = await res.json();
+        console.log('[useSimplificar] Job criado:', jobData);
 
-        if (!dados.resumo || !dados.corpo || !dados.pontos) {
-          throw new Error('Resposta do servidor inválida');
+        if (!jobData.jobId) {
+          throw new Error('Resposta do servidor inválida: jobId não encontrado');
         }
 
-        setResposta(dados);
-        await salvarNoCache(cacheId, dados);
+        // Step 2: Poll for completion
+        const resultado = await aguardarConclusao(jobData.jobId);
+        console.log('[useSimplificar] Resultado obtido:', resultado);
+
+        setResposta(resultado);
+        await salvarNoCache(cacheId, resultado);
        } catch (err) {
          console.error('[useSimplificar] Erro:', {
            erro: err instanceof Error ? err.message : String(err),
@@ -114,27 +149,37 @@ export function useSimplificar(conteudoId?: string) {
 
       try {
         console.log('[useSimplificar] Enviando requisição para', API_URL_O_QUE_MUDA);
+        console.log('[useSimplificar] Dados que serão enviados:', {
+          textLength: conteudoTrimmed.length,
+          textPreview: conteudoTrimmed.substring(0, 100)
+        });
+
+        // Step 1: Create job
         const res = await fetch(API_URL_O_QUE_MUDA, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: conteudoTrimmed }),
         });
 
-        console.log('[useSimplificar] Status da resposta O que muda:', res.status);
+        console.log('[useSimplificar] Resposta de criação de job recebida - Status:', res.status);
 
         if (!res.ok) {
           throw new Error(`Erro ${res.status}: ${res.statusText}`);
         }
 
-        const dados: RespostaAPI = await res.json();
-        console.log('[useSimplificar] Dados O que muda recebidos:', dados);
+        const jobData = await res.json();
+        console.log('[useSimplificar] Job criado:', jobData);
 
-        if (!dados.resumo || !dados.corpo) {
-          throw new Error('Resposta inválida do servidor');
+        if (!jobData.jobId) {
+          throw new Error('Resposta do servidor inválida: jobId não encontrado');
         }
 
-        await atualizarOQueMuda(cacheId, dados);
-        return dados;
+        // Step 2: Poll for completion
+        const resultado = await aguardarConclusao(jobData.jobId);
+        console.log('[useSimplificar] Resultado O que muda obtido:', resultado);
+
+        await atualizarOQueMuda(cacheId, resultado);
+        return resultado;
       } catch (err) {
         console.error('[useSimplificar] Erro ao carregar O que muda:', err);
         throw new Error(err instanceof Error ? err.message : 'Erro ao carregar dados');

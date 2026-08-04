@@ -107,7 +107,11 @@ func NewClient(apiKey string) (*Client, error) {
 	return &Client{
 		apiKey: apiKey,
 		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
+			// Generoso de propósito: essa chamada agora roda numa goroutine de
+			// background (ver internal/jobstore), não segurando mais nenhuma
+			// requisição HTTP do client esperando. O limite real de espera do
+			// usuário é imposto pelo contexto passado em internal/handler.
+			Timeout: 150 * time.Second,
 		},
 	}, nil
 }

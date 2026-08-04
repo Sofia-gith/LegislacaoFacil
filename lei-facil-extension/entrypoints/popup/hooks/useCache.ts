@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { RespostaStructurada } from '../types';
 
-declare const chrome: any;
+declare const browser: any;
 
 const CACHE_KEY = 'lei_facil_cache';
 const MAX_CACHE_SIZE = 10;
@@ -29,7 +29,7 @@ export function useCache() {
 
   const carregarCache = async () => {
     try {
-      const resultado = await chrome.storage.local.get(CACHE_KEY);
+      const resultado = await browser.storage.local.get(CACHE_KEY);
       const armazenado = resultado[CACHE_KEY] as CacheStorage | undefined;
 
       if (armazenado?.entries) {
@@ -83,7 +83,7 @@ export function useCache() {
         entries: Array.from(novaCache.values()),
       };
 
-      await chrome.storage.local.set({ [CACHE_KEY]: storage });
+      await browser.storage.local.set({ [CACHE_KEY]: storage });
     } catch (err) {
       console.error('Erro ao salvar cache:', err);
     }
@@ -102,7 +102,7 @@ export function useCache() {
           entries: Array.from(novaCache.values()),
         };
 
-        await chrome.storage.local.set({ [CACHE_KEY]: storage });
+        await browser.storage.local.set({ [CACHE_KEY]: storage });
       }
     } catch (err) {
       console.error('Erro ao atualizar cache:', err);

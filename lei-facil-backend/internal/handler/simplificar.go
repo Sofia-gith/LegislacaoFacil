@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strings"
 	"time"
-
 	"github.com/Sofia-gith/LegislacaoFacil/lei-facil-backend/internal/jobstore"
 )
 

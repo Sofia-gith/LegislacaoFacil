@@ -5,10 +5,12 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/Sofia-gith/LegislacaoFacil/lei-facil-backend/internal/gemini"
 	"github.com/Sofia-gith/LegislacaoFacil/lei-facil-backend/internal/handler"
+	"github.com/Sofia-gith/LegislacaoFacil/lei-facil-backend/internal/jobstore"
 )
 
 func main() {
@@ -58,13 +60,26 @@ func main() {
 
 	log.Println("[Main] Cliente Gemini criado com sucesso")
 
+	// JobStore compartilhado entre /simplificar e /o-que-muda.
+	// Limpeza a cada 10min remove jobs concluído/erro com mais de 30min —
+	// tempo de sobra pro polling do frontend encontrar o resultado, sem
+	// deixar o mapa crescer pra sempre.
+	jobs := jobstore.NewInMemoryStore()
+	stopCleanup := jobs.StartCleanup(10*time.Minute, 30*time.Minute)
+	defer stopCleanup()
+
 	mux := http.NewServeMux()
 
-	simplificarHandler := handler.NewSimplificarHandler(geminiClient)
+	simplificarHandler := handler.NewSimplificarHandler(geminiClient, jobs)
 	mux.Handle("/simplificar", corsMiddleware(allowedOrigin, simplificarHandler))
 
-	oQueMudaHandler := handler.NewOQueMudaHandler(geminiClient)
+	oQueMudaHandler := handler.NewOQueMudaHandler(geminiClient, jobs)
 	mux.Handle("/o-que-muda", corsMiddleware(allowedOrigin, oQueMudaHandler))
+
+	// Endpoint único de status — serve tanto /simplificar quanto /o-que-muda,
+	// já que o Job guarda seu próprio Type. O client faz polling aqui.
+	statusHandler := handler.NewStatusHandler(jobs)
+	mux.Handle("/status/", corsMiddleware(allowedOrigin, statusHandler))
 
 	log.Println("[Main] Rotas configuradas")
 
@@ -80,7 +95,7 @@ func corsMiddleware(allowedOrigin string, next http.Handler) http.Handler {
 		} else {
 			w.Header().Set("Access-Control-Allow-Origin", "*")
 		}
-		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 		if r.Method == http.MethodOptions {

@@ -54,6 +54,85 @@ type jobAceitoResponse struct {
 	JobID  string `json:"jobId"`
 	Status string `json:"status"`
 }
+// sanitizeText remove ruídos de formatação comuns em textos copiados de PDF/web
+// (múltiplos espaços, quebras de linha excessivas, tabulações), reduzindo o uso de tokens.
+func sanitizeText(input string) string {
+	// 1. Substitui tabulações e retornos de carro por espaço simples
+	cleaned := strings.ReplaceAll(input, "\r", "")
+	cleaned = strings.ReplaceAll(cleaned, "\t", " ") // Usado '=' ao invés de ':='
+
+	// 2. Normaliza quebras de linha consecutivas (mais de 2 vira 2 para manter a estrutura de parágrafos)
+	for strings.Contains(cleaned, "\n\n\n") {
+		cleaned = strings.ReplaceAll(cleaned, "\n\n\n", "\n\n")
+	}
+
+	// 3. Remove múltiplos espaços na mesma linha
+	for strings.Contains(cleaned, "  ") {
+		cleaned = strings.ReplaceAll(cleaned, "  ", " ")
+	}
+
+	// 4. Limpa espaços soltos em cada linha
+	lines := strings.Split(cleaned, "\n")
+	var sanitizedLines []string
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if trimmed != "" || len(sanitizedLines) > 0 { // evita linhas em branco no topo
+			sanitizedLines = append(sanitizedLines, trimmed)
+		}
+	}
+
+	return strings.Join(sanitizedLines, "\n")
+}
+
+// sanitizeJSONResponse corrige quebras de linha literais dentro de strings no JSON bruto da LLM
+func sanitizeJSONResponse(rawJSON string) string {
+	// Se o Gemini retornou markdown codeblocks como ```json ... ```, limpe primeiro
+	cleaned := strings.TrimSpace(rawJSON)
+	cleaned = strings.TrimPrefix(cleaned, "```json")
+	cleaned = strings.TrimPrefix(cleaned, "```")
+	cleaned = strings.TrimSuffix(cleaned, "```")
+	cleaned = strings.TrimSpace(cleaned)
+
+	// Substitui quebras de linha literais/reais que estejam soltas por "\n" escapado
+	// Isso evita o erro 'invalid character \n in string literal'
+	var builder strings.Builder
+	inString := false
+	escaped := false
+
+	for _, r := range cleaned {
+		switch r {
+		case '"':
+			if !escaped {
+				inString = !inString
+			}
+			builder.WriteRune(r)
+			escaped = false
+		case '\\':
+			escaped = !escaped
+			builder.WriteRune(r)
+		case '\n':
+			if inString {
+				// Se estamos DENTRO de uma string JSON, a quebra de linha física vira \n escapado
+				builder.WriteString("\\n")
+			} else {
+				// Se estamos FORA de uma string JSON, mantém a quebra (separador de chaves/propriedades)
+				builder.WriteRune(r)
+			}
+			escaped = false
+		case '\r':
+			// Ignora retornos de carro
+			if !inString {
+				builder.WriteRune(r)
+			}
+			escaped = false
+		default:
+			builder.WriteRune(r)
+			escaped = false
+		}
+	}
+
+	return builder.String()
+}
 
 func (h *SimplificarHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[Handler] Requisição recebida - Método: %s, URL: %s", r.Method, r.RequestURI)
@@ -156,7 +235,14 @@ func decodeAndValidate(w http.ResponseWriter, r *http.Request) (simplificarReque
 		return simplificarRequest{}, false
 	}
 
-	log.Printf("[Handler] Texto recebido - Tamanho: %d caracteres", len(req.Text))
+	tamanhoOriginal := len(req.Text)
+
+	// --- APLICA A LIMPEZA / SANITIZAÇÃO AQUI ---
+	req.Text = sanitizeText(req.Text)
+	tamanhoLimpo := len(req.Text)
+
+	log.Printf("[Handler] Texto recebido - Original: %d caracteres | Após Limpeza: %d caracteres (Economia: %d chars)", 
+		tamanhoOriginal, tamanhoLimpo, tamanhoOriginal-tamanhoLimpo)
 
 	if req.Text == "" {
 		log.Printf("[Handler] Erro: Texto vazio")
@@ -164,6 +250,7 @@ func decodeAndValidate(w http.ResponseWriter, r *http.Request) (simplificarReque
 		return simplificarRequest{}, false
 	}
 
+	// A validação agora mede o tamanho com o texto já reduzido e higienizado
 	if len(req.Text) > maxTextLength {
 		log.Printf("[Handler] Erro: Texto excede o tamanho máximo (%d > %d)", len(req.Text), maxTextLength)
 		writeJSON(w, http.StatusBadRequest, errorResponse{Error: "text exceeds maximum length of 50000 characters"})
@@ -172,7 +259,6 @@ func decodeAndValidate(w http.ResponseWriter, r *http.Request) (simplificarReque
 
 	return req, true
 }
-
 func writeJSON(w http.ResponseWriter, status int, body interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)

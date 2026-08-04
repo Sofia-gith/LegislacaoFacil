@@ -1,1 +1,35 @@
+# Build
+bin/
+dist/
+build/
+
+# Executáveis
+*.exe
+*.dll
+*.so
+*.dylib
+*.out
+
+# Ambiente
 .env
+.env.*
+!.env.example
+
+# Coverage
+coverage.out
+*.coverprofile
+
+# Logs
+*.log
+
+# Hot reload
+tmp/
+__debug_bin/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

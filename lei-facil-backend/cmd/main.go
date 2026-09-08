@@ -17,12 +17,10 @@ func main() {
 
 	log.Println("[Main] Iniciando servidor LeiaFácil...")
 
-	log.Printf("ANTES: %s", os.Getenv("GEMINI_API_KEY"))
-
 	if err := godotenv.Load(); err != nil {
 		log.Println("[Main] Aviso: arquivo .env não encontrado, usando variáveis de ambiente do sistema")
 	}
-	log.Printf("DEPOIS: %s", os.Getenv("GEMINI_API_KEY"))
+
 	apiKey := os.Getenv("GEMINI_API_KEY")
 	port := os.Getenv("PORT")
 	allowedOrigin := os.Getenv("ALLOWED_ORIGIN")
@@ -30,15 +28,8 @@ func main() {
 	if apiKey == "" {
 		log.Println("[Main] Aviso: GEMINI_API_KEY não configurada")
 	} else {
-		log.Println("[Main] GEMINI_API_KEY configurada")
+		log.Printf("[Main] GEMINI_API_KEY configurada: %.12s...", apiKey)
 	}
-	wd, _ := os.Getwd()
-	log.Printf("Diretório atual: %s", wd)
-
-	err := godotenv.Load()
-	log.Printf("godotenv.Load() = %v", err)
-
-	log.Printf("ENV GEMINI_API_KEY: %.12s...", os.Getenv("GEMINI_API_KEY"))
 
 	if port == "" {
 		port = "8000"

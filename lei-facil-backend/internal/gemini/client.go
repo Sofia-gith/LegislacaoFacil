@@ -154,16 +154,47 @@ type apiError struct {
 }
 
 func (c *Client) Simplify(ctx context.Context, text string) (string, error) {
+	log.Printf("[Gemini] Texto enviado: %s...", truncateLog(text, 150))
+
+	result, err := c.callGemini(ctx, systemPrompt, text, "simplificação")
+	if err != nil {
+		return "", err
+	}
+	return result, nil
+}
+
+func (c *Client) SimplifyStructured(ctx context.Context, text string) (interface{}, error) {
+	structured, err := c.callGeminiStructured(ctx, structuredPrompt, text, "simplificação estruturada", "structured")
+	if err != nil {
+		return nil, err
+	}
+	log.Println("[Gemini] Simplificação estruturada bem-sucedida")
+	return structured, nil
+}
+
+func (c *Client) AnalyzeImpact(ctx context.Context, text string) (interface{}, error) {
+	structured, err := c.callGeminiStructured(ctx, oQueMudaPrompt, text, "análise de impacto", "impact")
+	if err != nil {
+		return nil, err
+	}
+	log.Println("[Gemini] Análise de impacto bem-sucedida")
+	return structured, nil
+}
+
+// callGemini concentra a chamada HTTP crua à API do Gemini — montar payload,
+// enviar, ler e validar a resposta — usada por Simplify, SimplifyStructured
+// e AnalyzeImpact, que só variam no prompt de sistema enviado e no que fazem
+// com o texto retornado. logLabel é usado só nas mensagens de log (em pt-br).
+func (c *Client) callGemini(ctx context.Context, promptToUse, text, logLabel string) (string, error) {
 	if text == "" {
 		return "", errors.New("gemini: text cannot be empty")
 	}
 
-	log.Printf("[Gemini] Iniciando simplificação - Tamanho do texto: %d caracteres", len(text))
-	log.Printf("[Gemini] Texto enviado: %s...", truncateLog(text, 150))
+	log.Printf("[Gemini] Iniciando %s - Tamanho do texto: %d caracteres", logLabel, len(text))
 
 	payload := geminiRequest{
 		SystemInstruction: systemInstruction{
-			Parts: []part{{Text: systemPrompt}},
+			Parts: []part{{Text: promptToUse}},
 		},
 		Contents: []content{
 			{Parts: []part{{Text: text}}},
@@ -211,63 +242,20 @@ func (c *Client) Simplify(ctx context.Context, text string) (string, error) {
 		return "", errors.New("gemini: empty response from api")
 	}
 
-	result := gemResp.Candidates[0].Content.Parts[0].Text
-	return result, nil
+	return gemResp.Candidates[0].Content.Parts[0].Text, nil
 }
 
-func (c *Client) SimplifyStructured(ctx context.Context, text string) (interface{}, error) {
-	if text == "" {
-		return nil, errors.New("gemini: text cannot be empty")
-	}
-
-	log.Printf("[Gemini] Iniciando simplificação estruturada - Tamanho do texto: %d caracteres", len(text))
-
-	payload := geminiRequest{
-		SystemInstruction: systemInstruction{
-			Parts: []part{{Text: structuredPrompt}},
-		},
-		Contents: []content{
-			{Parts: []part{{Text: text}}},
-		},
-	}
-
-	body, err := json.Marshal(payload)
+// callGeminiStructured chama callGemini e faz o pós-processamento comum a
+// SimplifyStructured e AnalyzeImpact: limpar o JSON bruto devolvido pela LLM
+// e decodificar em StructuredResponse. errKind entra só na mensagem de erro,
+// pra manter o texto de erro igual ao que cada método tinha antes da junção
+// ("structured" / "impact").
+func (c *Client) callGeminiStructured(ctx context.Context, promptToUse, text, logLabel, errKind string) (*StructuredResponse, error) {
+	resultText, err := c.callGemini(ctx, promptToUse, text, logLabel)
 	if err != nil {
-		return nil, fmt.Errorf("gemini: failed to encode request: %w", err)
+		return nil, err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, apiURL, bytes.NewReader(body))
-	if err != nil {
-		return nil, fmt.Errorf("gemini: failed to create request: %w", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("x-goog-api-key", c.apiKey)
-
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("gemini: http request failed: %w", err)
-	}
-	defer resp.Body.Close()
-
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("gemini: failed to read response: %w", err)
-	}
-
-	var gemResp geminiResponse
-	if err := json.Unmarshal(respBody, &gemResp); err != nil {
-		return nil, fmt.Errorf("gemini: failed to decode response: %w", err)
-	}
-
-	if gemResp.Error != nil {
-		return nil, fmt.Errorf("gemini: api error %d: %s", gemResp.Error.Code, gemResp.Error.Message)
-	}
-
-	if len(gemResp.Candidates) == 0 || len(gemResp.Candidates[0].Content.Parts) == 0 {
-		return nil, errors.New("gemini: empty response from api")
-	}
-
-	resultText := gemResp.Candidates[0].Content.Parts[0].Text
 	log.Printf("[Gemini] Resposta recebida - Tamanho: %d caracteres", len(resultText))
 
 	// Aplica a limpeza que remove blocos de código e escapa quebras de linha internas
@@ -275,81 +263,11 @@ func (c *Client) SimplifyStructured(ctx context.Context, text string) (interface
 
 	var structured StructuredResponse
 	if err := json.Unmarshal([]byte(cleanJSON), &structured); err != nil {
-		log.Printf("[Gemini] Erro ao parsejar JSON estruturado: %v", err)
+		log.Printf("[Gemini] Erro ao parsejar JSON de %s: %v", logLabel, err)
 		log.Printf("[Gemini] Texto limpo enviado pro parse: %s", cleanJSON)
-		return nil, fmt.Errorf("gemini: failed to parse structured response: %w", err)
+		return nil, fmt.Errorf("gemini: failed to parse %s response: %w", errKind, err)
 	}
 
-	log.Printf("[Gemini] Simplificação estruturada bem-sucedida")
-	return &structured, nil
-}
-
-func (c *Client) AnalyzeImpact(ctx context.Context, text string) (interface{}, error) {
-	if text == "" {
-		return nil, errors.New("gemini: text cannot be empty")
-	}
-
-	log.Printf("[Gemini] Iniciando análise de impacto - Tamanho do texto: %d caracteres", len(text))
-
-	payload := geminiRequest{
-		SystemInstruction: systemInstruction{
-			Parts: []part{{Text: oQueMudaPrompt}},
-		},
-		Contents: []content{
-			{Parts: []part{{Text: text}}},
-		},
-	}
-
-	body, err := json.Marshal(payload)
-	if err != nil {
-		return nil, fmt.Errorf("gemini: failed to encode request: %w", err)
-	}
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, apiURL, bytes.NewReader(body))
-	if err != nil {
-		return nil, fmt.Errorf("gemini: failed to create request: %w", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("x-goog-api-key", c.apiKey)
-
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("gemini: http request failed: %w", err)
-	}
-	defer resp.Body.Close()
-
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("gemini: failed to read response: %w", err)
-	}
-
-	var gemResp geminiResponse
-	if err := json.Unmarshal(respBody, &gemResp); err != nil {
-		return nil, fmt.Errorf("gemini: failed to decode response: %w", err)
-	}
-
-	if gemResp.Error != nil {
-		return nil, fmt.Errorf("gemini: api error %d: %s", gemResp.Error.Code, gemResp.Error.Message)
-	}
-
-	if len(gemResp.Candidates) == 0 || len(gemResp.Candidates[0].Content.Parts) == 0 {
-		return nil, errors.New("gemini: empty response from api")
-	}
-
-	resultText := gemResp.Candidates[0].Content.Parts[0].Text
-	log.Printf("[Gemini] Resposta recebida - Tamanho: %d caracteres", len(resultText))
-
-	// Aplica a limpeza que remove blocos de código e escapa quebras de linha internas
-	cleanJSON := sanitizeJSONResponse(resultText)
-
-	var structured StructuredResponse
-	if err := json.Unmarshal([]byte(cleanJSON), &structured); err != nil {
-		log.Printf("[Gemini] Erro ao parsejar JSON de impacto: %v", err)
-		log.Printf("[Gemini] Texto limpo enviado pro parse: %s", cleanJSON)
-		return nil, fmt.Errorf("gemini: failed to parse impact response: %w", err)
-	}
-
-	log.Printf("[Gemini] Análise de impacto bem-sucedida")
 	return &structured, nil
 }
 

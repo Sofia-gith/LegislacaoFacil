@@ -18,71 +18,71 @@ const (
 
 	systemPrompt = `Você é um assistente de acessibilidade jurídica.
 
-			Sua tarefa: reescrever o texto legal abaixo para um adulto sem formação
-			jurídica — não simplifique o raciocínio, simplifique o vocabulário e a estrutura.
+            Sua tarefa: reescrever o texto legal abaixo para um adulto sem formação
+            jurídica — não simplifique o raciocínio, simplifique o vocabulário e a estrutura.
 
-			REGRAS DE CONTEÚDO:
-			- Não omita nenhuma informação factual: datas, números de lei, valores, prazos,
-			 URLs e nomes próprios devem ser preservados exatamente como no original.
-			- URLs e referências a leis/decretos devem ser mantidos por extenso, nunca resumidos 
-			como "um endereço específico" ou "uma lei municipal".
-			- Quando um termo técnico não tiver equivalente simples (ex: "regimento interno", "plano plurianual"),
-			 mantenha o termo e explique em poucas palavras o que ele significa, entre parênteses ou em aposto.
+            REGRAS DE CONTEÚDO:
+            - Não omita nenhuma informação factual: datas, números de lei, valores, prazos,
+              URLs e nomes próprios devem ser preservados exatamente como no original.
+            - URLs e referências a leis/decretos devem ser mantidos por extenso, nunca resumidos 
+              como "um endereço específico" ou "uma lei municipal".
+            - Quando um termo técnico não tiver equivalente simples (ex: "regimento interno", "plano plurianual"),
+              mantenha o termo e explique em poucas palavras o que ele significa, entre parênteses ou em aposto.
 
-			REGRAS DE ESTILO:
-			- Varie o tamanho das frases. Frases curtas demais em sequência são tão difíceis de ler quanto frases longas — 
-			conecte ideias relacionadas com conectivos simples (e, por isso, para isso, já que).
-			- Quando o texto original encadear múltiplas leis, decretos ou alterações em uma única frase longa
-			 (ex: "Lei X, regulamentada por Y, alterada por Z, regulamentada por W"), quebre essa cadeia em uma
-			 lista curta, mantendo a ordem cronológica e a relação entre cada lei e o decreto/alteração
-			 correspondente. Não crie uma seção separada para isso — mantenha no fluxo natural do texto,
-			 no mesmo ponto em que a informação aparece no original.
-			- Comece com um resumo de 1-2 frases: o que é o documento e o que ele decide, antes de entrar em detalhes.
-			- Use listas (bullets) para enumerar itens que no original aparecem como uma sequência (considerandos, artigos, condições).
-			- Não use jargão jurídico desnecessário, mas também não infantilize o tom — o leitor é um adulto capaz, só não é advogado.
+            REGRAS DE ESTILO:
+            - Varie o tamanho das frases. Frases curtas demais em sequência são tão difíceis de ler quanto frases longas — 
+              conecte ideias relacionadas com conectivos simples (e, por isso, para isso, já que).
+            - Quando o texto original encadear múltiplas leis, decretos ou alterações em uma única frase longa
+              (ex: "Lei X, regulamentada por Y, alterada por Z, regulamentada por W"), quebre essa cadeia em uma
+              lista curta, mantendo a ordem cronológica e a relação entre cada lei e o decreto/alteração
+              correspondente. Não crie uma seção separada para isso — mantenha no fluxo natural do texto,
+              no mesmo ponto em que a informação aparece no original.
+            - Comece com um resumo de 1-2 frases: o que é o documento e o que ele decide, antes de entrar em detalhes.
+            - Use listas (bullets) para enumerar itens que no original aparecem como uma sequência (considerandos, artigos, condições).
+            - Não use jargão jurídico desnecessário, mas também não infantilize o tom — o leitor é um adulto capaz, só não é advogado.
 
-			Responda apenas com o texto reescrito, sem introduções ou saudações.`
+            Responda apenas com o texto reescrito, sem introduções ou saudações.`
 
 	structuredPrompt = `Você é um assistente de acessibilidade jurídica.
 
-			Sua tarefa: reescrever o texto legal abaixo para um adulto sem formação jurídica — não simplifique o raciocínio, simplifique o vocabulário e a estrutura.
+            Sua tarefa: reescrever o texto legal abaixo para um adulto sem formação jurídica — não simplifique o raciocínio, simplifique o vocabulário e a estrutura.
 
-			REGRAS DE CONTEÚDO:
-			- Não omita nenhuma informação factual: datas, números de lei, valores, prazos, URLs e nomes próprios devem ser preservados exatamente como no original.
-			- URLs e referências a leis/decretos devem ser mantidos por extenso, nunca resumidos como "um endereço específico" ou "uma lei municipal".
-			- Quando um termo técnico não tiver equivalente simples, mantenha o termo e explique em poucas palavras entre parênteses.
+            REGRAS DE CONTEÚDO:
+            - Não omita nenhuma informação factual: datas, números de lei, valores, prazos, URLs e nomes próprios devem ser preservados exatamente como no original.
+            - URLs e referências a leis/decretos devem ser mantidos por extenso, nunca resumidos como "um endereço específico" ou "uma lei municipal".
+            - Quando um termo técnico não tiver equivalente simples, mantenha o termo e explique em poucas palavras entre parênteses.
 
-			REGRAS DE ESTILO:
-			- Varie o tamanho das frases. Frases curtas demais em sequência são tão difíceis de ler quanto frases longas.
-			- Quando o texto original encadear múltiplas leis, quebre essa cadeia em uma lista curta, mantendo a ordem cronológica.
-			- Comece com um resumo de 1-2 frases: o que é o documento e o que ele decide, antes de entrar em detalhes.
-			- Use listas (bullets) para enumerar itens que aparecem como uma sequência.
-			- Não use jargão jurídico desnecessário, mas também não infantilize o tom.
+            REGRAS DE ESTILO:
+            - Varie o tamanho das frases. Frases curtas demais em sequência são tão difíceis de ler quanto frases longas.
+            - Quando o texto original encadear múltiplas leis, quebre essa cadeia em uma lista curta, mantendo a ordem cronológica.
+            - Comece com um resumo de 1-2 frases: o que é o documento e o que ele decide, antes de entrar em detalhes.
+            - Use listas (bullets) para enumerar itens que aparecem como uma sequência.
+            - Não use jargão jurídico desnecessário, mas também não infantilize o tom.
 
-			Responda em JSON estruturado (APENAS JSON VÁLIDO, sem markdown ou codeblocks) com exatamente esta estrutura:
-			{
-			  "resumo": "1-2 frases explicando o que é o documento e o que ele decide",
-			  "corpo": "Explicação detalhada em linguagem simples, mantendo toda informação factual, com bullets quando apropriado",
-			  "pontos": ["Ponto principal 1", "Ponto principal 2", "Ponto principal 3"]
-			}
+            Responda em JSON estruturado (APENAS JSON VÁLIDO, sem markdown ou codeblocks) com exatamente esta estrutura:
+            {
+              "resumo": "1-2 frases explicando o que é o documento e o que ele decide",
+              "corpo": "Explicação detalhada em linguagem simples, mantendo toda informação factual, com bullets quando apropriado",
+              "pontos": ["Ponto principal 1", "Ponto principal 2", "Ponto principal 3"]
+            }
 
-			Garanta que cada campo seja uma string válida. O campo pontos é um array de 3-5 strings.`
+            Garanta que cada campo seja uma string válida sem quebras de linha não escapadas. O campo pontos é um array de 3-5 strings.`
 
 	oQueMudaPrompt = `Você é um assistente de acessibilidade jurídica especializado em análise de impacto.
 
-			Sua tarefa: explicar de forma simples e clara como o texto legal abaixo pode afetar a vida de uma pessoa comum (morador, cidadão).
+            Sua tarefa: explicar de forma simples e clara como o texto legal abaixo pode afetar a vida de uma pessoa comum (morador, cidadão).
 
-			REGRAS:
-			- Focar apenas no impacto prático e direto para o dia a dia de um cidadão comum.
-			- Preservar informações factais importantes (datas, números, prazos).
-			- Usar linguagem simples, sem jargão jurídico desnecessário.
-			- Estruturar em: o que muda (resumo) e como afeta você (detalhes).
+            REGRAS:
+            - Focar apenas no impacto prático e direto para o dia a dia de um cidadão comum.
+            - Preservar informações factais importantes (datas, números, prazos).
+            - Usar linguagem simples, sem jargão jurídico desnecessário.
+            - Estruturar em: o que muda (resumo) e como afeta você (detalhes).
 
-			Responda em JSON estruturado (APENAS JSON VÁLIDO, sem markdown ou codeblocks) com exatamente esta estrutura:
-			{
-			  "resumo": "1-2 frases explicando como isso afeta uma pessoa comum",
-			  "corpo": "Detalhes práticos de como a lei muda o dia a dia, com exemplos quando possível"
-			}`
+            Responda em JSON estruturado (APENAS JSON VÁLIDO, sem markdown ou codeblocks) com exatamente esta estrutura:
+            {
+              "resumo": "1-2 frases explicando como isso afeta uma pessoa comum",
+              "corpo": "Detalhes práticos de como a lei muda o dia a dia, com exemplos quando possível"
+            }`
 )
 
 type HTTPDoer interface {
@@ -97,7 +97,7 @@ type Client struct {
 type StructuredResponse struct {
 	Resumo string   `json:"resumo"`
 	Corpo  string   `json:"corpo"`
-	Pontos []string `json:"pontos"`
+	Pontos []string `json:"pontos,omitempty"`
 }
 
 func NewClient(apiKey string) (*Client, error) {
@@ -107,10 +107,6 @@ func NewClient(apiKey string) (*Client, error) {
 	return &Client{
 		apiKey: apiKey,
 		httpClient: &http.Client{
-			// Generoso de propósito: essa chamada agora roda numa goroutine de
-			// background (ver internal/jobstore), não segurando mais nenhuma
-			// requisição HTTP do client esperando. O limite real de espera do
-			// usuário é imposto pelo contexto passado em internal/handler.
 			Timeout: 150 * time.Second,
 		},
 	}, nil
@@ -158,16 +154,47 @@ type apiError struct {
 }
 
 func (c *Client) Simplify(ctx context.Context, text string) (string, error) {
+	log.Printf("[Gemini] Texto enviado: %s...", truncateLog(text, 150))
+
+	result, err := c.callGemini(ctx, systemPrompt, text, "simplificação")
+	if err != nil {
+		return "", err
+	}
+	return result, nil
+}
+
+func (c *Client) SimplifyStructured(ctx context.Context, text string) (interface{}, error) {
+	structured, err := c.callGeminiStructured(ctx, structuredPrompt, text, "simplificação estruturada", "structured")
+	if err != nil {
+		return nil, err
+	}
+	log.Println("[Gemini] Simplificação estruturada bem-sucedida")
+	return structured, nil
+}
+
+func (c *Client) AnalyzeImpact(ctx context.Context, text string) (interface{}, error) {
+	structured, err := c.callGeminiStructured(ctx, oQueMudaPrompt, text, "análise de impacto", "impact")
+	if err != nil {
+		return nil, err
+	}
+	log.Println("[Gemini] Análise de impacto bem-sucedida")
+	return structured, nil
+}
+
+// callGemini concentra a chamada HTTP crua à API do Gemini — montar payload,
+// enviar, ler e validar a resposta — usada por Simplify, SimplifyStructured
+// e AnalyzeImpact, que só variam no prompt de sistema enviado e no que fazem
+// com o texto retornado. logLabel é usado só nas mensagens de log (em pt-br).
+func (c *Client) callGemini(ctx context.Context, promptToUse, text, logLabel string) (string, error) {
 	if text == "" {
 		return "", errors.New("gemini: text cannot be empty")
 	}
 
-	log.Printf("[Gemini] Iniciando simplificação - Tamanho do texto: %d caracteres", len(text))
-	log.Printf("[Gemini] Texto enviado: %s...", truncateLog(text, 150))
+	log.Printf("[Gemini] Iniciando %s - Tamanho do texto: %d caracteres", logLabel, len(text))
 
 	payload := geminiRequest{
 		SystemInstruction: systemInstruction{
-			Parts: []part{{Text: systemPrompt}},
+			Parts: []part{{Text: promptToUse}},
 		},
 		Contents: []content{
 			{Parts: []part{{Text: text}}},
@@ -180,10 +207,7 @@ func (c *Client) Simplify(ctx context.Context, text string) (string, error) {
 		return "", fmt.Errorf("gemini: failed to encode request: %w", err)
 	}
 
-	log.Printf("[Gemini] Payload criado - Tamanho: %d bytes", len(body))
-
-	url := apiURL
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, apiURL, bytes.NewReader(body))
 	if err != nil {
 		log.Printf("[Gemini] Erro ao criar requisição HTTP: %v", err)
 		return "", fmt.Errorf("gemini: failed to create request: %w", err)
@@ -191,7 +215,6 @@ func (c *Client) Simplify(ctx context.Context, text string) (string, error) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("x-goog-api-key", c.apiKey)
 
-	log.Printf("[Gemini] Enviando requisição para API Gemini...")
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		log.Printf("[Gemini] Erro na requisição HTTP: %v", err)
@@ -199,214 +222,96 @@ func (c *Client) Simplify(ctx context.Context, text string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	log.Printf("API Key: %.12s...", c.apiKey)
-	log.Printf("[Gemini] Resposta recebida - Status Code: %d", resp.StatusCode)
-
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Printf("[Gemini] Erro ao ler resposta: %v", err)
 		return "", fmt.Errorf("gemini: failed to read response: %w", err)
 	}
 
-	log.Printf("[Gemini] Corpo da resposta - Tamanho: %d bytes", len(respBody))
-
 	var gemResp geminiResponse
-
 	if err := json.Unmarshal(respBody, &gemResp); err != nil {
 		log.Printf("[Gemini] Erro ao decodificar resposta JSON: %v", err)
-		log.Printf("[Gemini] Resposta bruta: %s", string(respBody))
 		return "", fmt.Errorf("gemini: failed to decode response: %w", err)
 	}
 
 	if gemResp.Error != nil {
-		log.Printf("[Gemini] Erro na API Gemini - Código: %d, Mensagem: %s", gemResp.Error.Code, gemResp.Error.Message)
 		return "", fmt.Errorf("gemini: api error %d: %s", gemResp.Error.Code, gemResp.Error.Message)
 	}
 
 	if len(gemResp.Candidates) == 0 || len(gemResp.Candidates[0].Content.Parts) == 0 {
-		log.Printf("[Gemini] Erro: Resposta vazia da API")
 		return "", errors.New("gemini: empty response from api")
 	}
 
-	result := gemResp.Candidates[0].Content.Parts[0].Text
-	log.Printf("[Gemini] Simplificação bem-sucedida - Tamanho do resultado: %d caracteres", len(result))
-	log.Printf("[Gemini] Resultado: %s...", truncateLog(result, 150))
-
-	return result, nil
+	return gemResp.Candidates[0].Content.Parts[0].Text, nil
 }
 
-func (c *Client) SimplifyStructured(ctx context.Context, text string) (interface{}, error) {
-	if text == "" {
-		return nil, errors.New("gemini: text cannot be empty")
-	}
-
-	log.Printf("[Gemini] Iniciando simplificação estruturada - Tamanho do texto: %d caracteres", len(text))
-
-	payload := geminiRequest{
-		SystemInstruction: systemInstruction{
-			Parts: []part{{Text: structuredPrompt}},
-		},
-		Contents: []content{
-			{Parts: []part{{Text: text}}},
-		},
-	}
-
-	body, err := json.Marshal(payload)
+// callGeminiStructured chama callGemini e faz o pós-processamento comum a
+// SimplifyStructured e AnalyzeImpact: limpar o JSON bruto devolvido pela LLM
+// e decodificar em StructuredResponse. errKind entra só na mensagem de erro,
+// pra manter o texto de erro igual ao que cada método tinha antes da junção
+// ("structured" / "impact").
+func (c *Client) callGeminiStructured(ctx context.Context, promptToUse, text, logLabel, errKind string) (*StructuredResponse, error) {
+	resultText, err := c.callGemini(ctx, promptToUse, text, logLabel)
 	if err != nil {
-		log.Printf("[Gemini] Erro ao encodar payload: %v", err)
-		return nil, fmt.Errorf("gemini: failed to encode request: %w", err)
+		return nil, err
 	}
 
-	url := apiURL
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
-	if err != nil {
-		log.Printf("[Gemini] Erro ao criar requisição HTTP: %v", err)
-		return nil, fmt.Errorf("gemini: failed to create request: %w", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("x-goog-api-key", c.apiKey)
-
-	log.Printf("[Gemini] Enviando requisição para simplificação estruturada...")
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		log.Printf("[Gemini] Erro na requisição HTTP: %v", err)
-		return nil, fmt.Errorf("gemini: http request failed: %w", err)
-	}
-	defer resp.Body.Close()
-
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Printf("[Gemini] Erro ao ler resposta: %v", err)
-		return nil, fmt.Errorf("gemini: failed to read response: %w", err)
-	}
-
-	var gemResp geminiResponse
-	if err := json.Unmarshal(respBody, &gemResp); err != nil {
-		log.Printf("[Gemini] Erro ao decodificar resposta: %v", err)
-		return nil, fmt.Errorf("gemini: failed to decode response: %w", err)
-	}
-
-	if gemResp.Error != nil {
-		log.Printf("[Gemini] Erro na API Gemini: %s", gemResp.Error.Message)
-		return nil, fmt.Errorf("gemini: api error %d: %s", gemResp.Error.Code, gemResp.Error.Message)
-	}
-
-	if len(gemResp.Candidates) == 0 || len(gemResp.Candidates[0].Content.Parts) == 0 {
-		log.Printf("[Gemini] Erro: Resposta vazia")
-		return nil, errors.New("gemini: empty response from api")
-	}
-
-	resultText := gemResp.Candidates[0].Content.Parts[0].Text
 	log.Printf("[Gemini] Resposta recebida - Tamanho: %d caracteres", len(resultText))
 
-	resultText = strings.TrimSpace(resultText)
-	if strings.HasPrefix(resultText, "```json") {
-		resultText = strings.TrimPrefix(resultText, "```json")
-	}
-	if strings.HasPrefix(resultText, "```") {
-		resultText = strings.TrimPrefix(resultText, "```")
-	}
-	if strings.HasSuffix(resultText, "```") {
-		resultText = strings.TrimSuffix(resultText, "```")
-	}
-	resultText = strings.TrimSpace(resultText)
+	// Aplica a limpeza que remove blocos de código e escapa quebras de linha internas
+	cleanJSON := sanitizeJSONResponse(resultText)
 
 	var structured StructuredResponse
-	if err := json.Unmarshal([]byte(resultText), &structured); err != nil {
-		log.Printf("[Gemini] Erro ao parsejar JSON estruturado: %v", err)
-		log.Printf("[Gemini] Texto recebido: %s", resultText)
-		return nil, fmt.Errorf("gemini: failed to parse structured response: %w", err)
+	if err := json.Unmarshal([]byte(cleanJSON), &structured); err != nil {
+		log.Printf("[Gemini] Erro ao parsejar JSON de %s: %v", logLabel, err)
+		log.Printf("[Gemini] Texto limpo enviado pro parse: %s", cleanJSON)
+		return nil, fmt.Errorf("gemini: failed to parse %s response: %w", errKind, err)
 	}
 
-	log.Printf("[Gemini] Simplificação estruturada bem-sucedida")
 	return &structured, nil
 }
 
-func (c *Client) AnalyzeImpact(ctx context.Context, text string) (interface{}, error) {
-	if text == "" {
-		return nil, errors.New("gemini: text cannot be empty")
+func sanitizeJSONResponse(rawJSON string) string {
+	cleaned := strings.TrimSpace(rawJSON)
+	cleaned = strings.TrimPrefix(cleaned, "```json")
+	cleaned = strings.TrimPrefix(cleaned, "```")
+	cleaned = strings.TrimSuffix(cleaned, "```")
+	cleaned = strings.TrimSpace(cleaned)
+
+	var builder strings.Builder
+	inString := false
+	escaped := false
+
+	for _, r := range cleaned {
+		switch r {
+		case '"':
+			if !escaped {
+				inString = !inString
+			}
+			builder.WriteRune(r)
+			escaped = false
+		case '\\':
+			escaped = !escaped
+			builder.WriteRune(r)
+		case '\n':
+			if inString {
+				builder.WriteString("\\n")
+			} else {
+				builder.WriteRune(r)
+			}
+			escaped = false
+		case '\r':
+			if !inString {
+				builder.WriteRune(r)
+			}
+			escaped = false
+		default:
+			builder.WriteRune(r)
+			escaped = false
+		}
 	}
 
-	log.Printf("[Gemini] Iniciando análise de impacto - Tamanho do texto: %d caracteres", len(text))
-
-	payload := geminiRequest{
-		SystemInstruction: systemInstruction{
-			Parts: []part{{Text: oQueMudaPrompt}},
-		},
-		Contents: []content{
-			{Parts: []part{{Text: text}}},
-		},
-	}
-
-	body, err := json.Marshal(payload)
-	if err != nil {
-		log.Printf("[Gemini] Erro ao encodar payload: %v", err)
-		return nil, fmt.Errorf("gemini: failed to encode request: %w", err)
-	}
-
-	url := apiURL
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
-	if err != nil {
-		log.Printf("[Gemini] Erro ao criar requisição HTTP: %v", err)
-		return nil, fmt.Errorf("gemini: failed to create request: %w", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("x-goog-api-key", c.apiKey)
-
-	log.Printf("[Gemini] Enviando requisição para análise de impacto...")
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		log.Printf("[Gemini] Erro na requisição HTTP: %v", err)
-		return nil, fmt.Errorf("gemini: http request failed: %w", err)
-	}
-	defer resp.Body.Close()
-
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Printf("[Gemini] Erro ao ler resposta: %v", err)
-		return nil, fmt.Errorf("gemini: failed to read response: %w", err)
-	}
-
-	var gemResp geminiResponse
-	if err := json.Unmarshal(respBody, &gemResp); err != nil {
-		log.Printf("[Gemini] Erro ao decodificar resposta: %v", err)
-		return nil, fmt.Errorf("gemini: failed to decode response: %w", err)
-	}
-
-	if gemResp.Error != nil {
-		log.Printf("[Gemini] Erro na API Gemini: %s", gemResp.Error.Message)
-		return nil, fmt.Errorf("gemini: api error %d: %s", gemResp.Error.Code, gemResp.Error.Message)
-	}
-
-	if len(gemResp.Candidates) == 0 || len(gemResp.Candidates[0].Content.Parts) == 0 {
-		log.Printf("[Gemini] Erro: Resposta vazia")
-		return nil, errors.New("gemini: empty response from api")
-	}
-
-	resultText := gemResp.Candidates[0].Content.Parts[0].Text
-	log.Printf("[Gemini] Resposta recebida - Tamanho: %d caracteres", len(resultText))
-
-	resultText = strings.TrimSpace(resultText)
-	if strings.HasPrefix(resultText, "```json") {
-		resultText = strings.TrimPrefix(resultText, "```json")
-	}
-	if strings.HasPrefix(resultText, "```") {
-		resultText = strings.TrimPrefix(resultText, "```")
-	}
-	if strings.HasSuffix(resultText, "```") {
-		resultText = strings.TrimSuffix(resultText, "```")
-	}
-	resultText = strings.TrimSpace(resultText)
-
-	var structured StructuredResponse
-	if err := json.Unmarshal([]byte(resultText), &structured); err != nil {
-		log.Printf("[Gemini] Erro ao parsejar JSON de impacto: %v", err)
-		log.Printf("[Gemini] Texto recebido: %s", resultText)
-		return nil, fmt.Errorf("gemini: failed to parse impact response: %w", err)
-	}
-
-	log.Printf("[Gemini] Análise de impacto bem-sucedida")
-	return &structured, nil
+	return builder.String()
 }
 
 func truncateLog(s string, maxLen int) string {
